@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+<html lang="it" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TruckWay v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060a0f;
+  --card: #0f1923;
+  --card2: #162030;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --accent: #00d4ff;
+  --green: #00e676;
+  --red: #ff3d3d;
+  --orange: #ff9100;
+  --text: #e8f4ff;
+  --text2: #6b8fa8;
+  --text3: #2a4a60;
+  --r: 16px;
+  --r2: 24px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: 'Exo 2', 'Tajawal', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events:none; z-index:0;
+}
+
+.wrap { max-width: 500px; margin:0 auto; min-height:100vh; position:relative; z-index:1; }
+
+/* SCREENS */
+.screen { display:none; flex-direction:column; min-height:100vh; animation: fu 0.3s ease; }
+.screen.active { display:flex; }
+@keyframes fu { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+/* ══ TOPBAR ══ */
+.topbar {
+  padding: 18px 22px 14px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(6,10,15,0.9);
+  backdrop-filter: blur(10px);
+  position: sticky; top:0; z-index:10;
+}
+.tb-icon {
+  width:38px; height:38px;
+  background: linear-gradient(135deg, var(--accent), #007aaa);
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px;
+  box-shadow: 0 3px 12px rgba(0,212,255,0.25);
+  flex-shrink:0;
+}
+.tb-name { font-size:17px; font-weight:900; letter-spacing:2px; flex:1; }
+.tb-name span { color:var(--accent); }
+.tb-time { font-size:13px; color:var(--accent); font-weight:700; }
+.tb-lang { font-size:12px; color:var(--text2); cursor:pointer; background:var(--card); border:1px solid var(--border2); border-radius:7px; padding:5px 10px; transition:0.2s; }
+.tb-lang:active { transform:scale(0.95); }
+
+/* ══ SCREEN 0: LANGUAGE ══ */
+#s0 { justify-content:center; align-items:center; padding:32px 24px; gap:0; }
+
+.brand { text-align:center; margin-bottom:44px; }
+.brand-truck { font-size:70px; filter:drop-shadow(0 0 24px rgba(0,212,255,0.4)); animation:float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.brand-name { font-size:34px; font-weight:900; letter-spacing:4px; margin-top:10px; }
+.brand-name span { color:var(--accent); }
+.brand-sub { font-size:12px; color:var(--text2); letter-spacing:2px; margin-top:4px; text-transform:uppercase; }
+
+.lang-label { font-size:13px; color:var(--text2); margin-bottom:18px; text-align:center; }
+
+.lang-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; width:100%; }
+
+.lang-btn {
+  background:var(--card);
+  border:2px solid var(--border);
+  border-radius:var(--r2);
+  padding:20px 14px;
+  display:flex; flex-direction:column; align-items:center; gap:7px;
+  cursor:pointer; transition:all 0.2s;
+}
+.lang-btn:hover { border-color:rgba(0,212,255,0.35); }
+.lang-btn:active { transform:scale(0.96); }
+.lang-btn.wide { grid-column:span 2; flex-direction:row; justify-content:center; gap:14px; }
+
+.lf { font-size:36px; }
+.ln { font-size:15px; font-weight:800; }
+.ll { font-size:11px; color:var(--text2); }
+
+/* ══ SCREEN 1: CARICO / SCARICO ══ */
+#s1 { justify-content:center; align-items:center; padding:32px 24px; gap:0; }
+
+.cs-title { font-size:15px; color:var(--text2); margin-bottom:28px; text-align:center; font-weight:600; letter-spacing:0.5px; }
+
+.cs-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; width:100%; }
+
+.cs-btn {
+  background:var(--card);
+  border:2px solid var(--border);
+  border-radius:var(--r2);
+  padding:36px 20px;
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+  cursor:pointer; transition:all 0.2s;
+  position:relative; overflow:hidden;
+}
+
+.cs-btn::before {
+  content:''; position:absolute; inset:0;
+  opacity:0; transition:opacity 0.2s;
+}
+
+.cs-btn.carico::before { background:linear-gradient(135deg, rgba(0,212,255,0.07), transparent); }
+.cs-btn.scarico::before { background:linear-gradient(135deg, rgba(0,230,118,0.07), transparent); }
+
+.cs-btn:hover::before { opacity:1; }
+.cs-btn.carico:hover { border-color:rgba(0,212,255,0.4); }
+.cs-btn.scarico:hover { border-color:rgba(0,230,118,0.4); }
+.cs-btn:active { transform:scale(0.97); }
+
+.cs-emoji { font-size:52px; }
+.cs-name { font-size:20px; font-weight:900; letter-spacing:1px; }
+.cs-btn.carico .cs-name { color:var(--accent); }
+.cs-btn.scarico .cs-name { color:var(--green); }
+.cs-sub { font-size:12px; color:var(--text2); text-align:center; line-height:1.5; }
+
+/* ══ FORM SCREEN ══ */
+#s-carico, #s-scarico { padding-bottom:36px; }
+
+.form-body { padding:20px 20px 0; display:flex; flex-direction:column; gap:14px; }
+
+.sec { display:flex; align-items:center; gap:8px; margin-top:4px; }
+.sec-icon { width:26px; height:26px; background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.2); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+.sec-title { font-size:10px; font-weight:800; color:var(--accent); letter-spacing:2px; text-transform:uppercase; }
+
+.field { display:flex; flex-direction:column; gap:6px; }
+.flabel { font-size:12px; font-weight:700; color:var(--text2); padding-left:2px; display:flex; align-items:center; gap:7px; }
+.opt-tag { font-size:9px; background:rgba(255,255,255,0.05); border:1px solid var(--border2); border-radius:4px; padding:2px 6px; color:var(--text3); font-weight:700; letter-spacing:0.5px; }
+
+.finput {
+  background:var(--card);
+  border:1.5px solid var(--border2);
+  border-radius:var(--r);
+  padding:14px 16px;
+  font-size:16px; color:var(--text);
+  font-family:'Exo 2','Tajawal',sans-serif;
+  outline:none; width:100%;
+  transition:border-color 0.2s;
+  -webkit-appearance:none;
+}
+.finput:focus { border-color:var(--accent); }
+.finput::placeholder { color:var(--text3); }
+
+.frow { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+.auto-row {
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:var(--r); padding:13px 16px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.auto-val { font-size:14px; font-weight:700; }
+.auto-tag { font-size:9px; font-weight:800; letter-spacing:1.5px; color:var(--accent); background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.2); border-radius:5px; padding:3px 7px; }
+
+/* CARGO TYPES */
+.cargo-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.cargo-card {
+  background:var(--card); border:2px solid var(--border);
+  border-radius:var(--r); padding:14px 10px;
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  cursor:pointer; transition:all 0.2s; text-align:center;
+}
+.cargo-card:active { transform:scale(0.97); }
+.cargo-card.sel { border-color:var(--accent); background:rgba(0,212,255,0.06); }
+.cargo-emoji { font-size:26px; }
+.cargo-name { font-size:12px; font-weight:800; }
+.cargo-range { font-size:10px; color:var(--text2); background:var(--card2); border-radius:5px; padding:2px 7px; font-weight:700; }
+.cargo-card.sel .cargo-range { color:var(--accent); background:rgba(0,212,255,0.1); }
+
+/* PHOTO */
+.photo-zone {
+  background:var(--card); border:2px dashed var(--border2);
+  border-radius:var(--r2); padding:26px 18px;
+  display:flex; flex-direction:column; align-items:center; gap:9px;
+  cursor:pointer; transition:all 0.2s;
+}
+.photo-zone:active { transform:scale(0.99); }
+.photo-zone.done { border-style:solid; border-color:var(--green); }
+.pz-icon { font-size:38px; }
+.pz-title { font-size:15px; font-weight:800; }
+.pz-sub { font-size:12px; color:var(--text2); text-align:center; line-height:1.5; }
+.pz-prev { width:100%; max-height:130px; object-fit:cover; border-radius:10px; display:none; margin-top:4px; }
+
+/* TEMP RESULT */
+.temp-bar { display:none; background:var(--card2); border-radius:var(--r); padding:13px 16px; align-items:center; gap:12px; }
+.temp-bar.show { display:flex; }
+.tc { flex:1; text-align:center; }
+.tc-l { font-size:10px; color:var(--text3); font-weight:800; letter-spacing:1px; margin-bottom:3px; }
+.tc-v { font-size:26px; font-weight:900; }
+.tc-v.ok { color:var(--green); }
+.tc-v.bad { color:var(--red); }
+.tsep { width:1px; height:40px; background:var(--border2); flex-shrink:0; }
+.tverd { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; }
+.tverd-icon { font-size:24px; }
+.tverd-txt { font-size:10px; font-weight:800; letter-spacing:1px; }
+.tverd-txt.ok { color:var(--green); }
+.tverd-txt.bad { color:var(--red); }
+
+/* SIGNATURE */
+.sig-wrap { background:var(--card); border:1.5px solid var(--border2); border-radius:var(--r); overflow:hidden; }
+.sig-label { padding:10px 14px 6px; font-size:11px; color:var(--text2); font-weight:700; letter-spacing:0.5px; display:flex; justify-content:space-between; align-items:center; }
+.sig-clear { font-size:11px; color:var(--red); cursor:pointer; font-weight:700; }
+canvas#sig-canvas { display:block; width:100%; height:120px; background:#0a1520; touch-action:none; cursor:crosshair; }
+
+/* SUBMIT */
+.submit-wrap { padding:18px 20px; }
+.submit-btn {
+  width:100%;
+  border:none; border-radius:var(--r2);
+  padding:19px; font-size:17px; font-weight:900;
+  cursor:pointer; font-family:'Exo 2',sans-serif;
+  letter-spacing:1px; transition:all 0.2s; text-transform:uppercase;
+}
+.submit-btn.carico { background:linear-gradient(135deg, var(--accent), #007aaa); color:#000; box-shadow:0 5px 20px rgba(0,212,255,0.3); }
+.submit-btn.scarico { background:linear-gradient(135deg, var(--green), #00a855); color:#000; box-shadow:0 5px 20px rgba(0,230,118,0.3); }
+.submit-btn:active { transform:scale(0.98); box-shadow:none; }
+
+input[type="file"] { display:none; }
+
+/* ══ SUCCESS ══ */
+#s-success { justify-content:center; align-items:center; padding:36px 24px; text-align:center; }
+.suc-ring {
+  width:120px; height:120px; border-radius:50%;
+  background:rgba(0,230,118,0.08); border:3px solid var(--green);
+  display:flex; align-items:center; justify-content:center;
+  font-size:56px; margin-bottom:24px;
+  animation:pulse 2.5s ease infinite;
+}
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(0,230,118,0.3)} 50%{box-shadow:0 0 0 22px rgba(0,230,118,0)} }
+.suc-title { font-size:24px; font-weight:900; color:var(--green); margin-bottom:8px; }
+.suc-sub { font-size:14px; color:var(--text2); line-height:1.7; margin-bottom:28px; }
+
+.dock-card { background:var(--card); border:2px solid var(--border2); border-radius:var(--r2); padding:24px; width:100%; max-width:320px; margin-bottom:24px; }
+.dock-lbl { font-size:10px; font-weight:800; letter-spacing:2px; color:var(--text2); text-transform:uppercase; margin-bottom:6px; }
+.dock-num { font-size:72px; font-weight:900; color:var(--accent); font-family:'Exo 2',monospace; line-height:1; letter-spacing:-2px; }
+.dock-dots { display:flex; gap:6px; justify-content:center; margin-top:12px; }
+.dock-dots span { width:7px; height:7px; border-radius:50%; background:var(--text3); animation:dp 1.4s ease infinite; }
+.dock-dots span:nth-child(2){animation-delay:.2s} .dock-dots span:nth-child(3){animation-delay:.4s}
+@keyframes dp { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+
+/* CMR CARD */
+.cmr-card {
+  background:var(--card); border:1.5px solid rgba(255,145,0,0.25);
+  border-radius:var(--r); padding:16px 18px;
+  width:100%; max-width:320px; margin-bottom:20px;
+  display:flex; align-items:center; gap:14px;
+}
+.cmr-icon { font-size:28px; flex-shrink:0; }
+.cmr-info { flex:1; }
+.cmr-title { font-size:13px; font-weight:800; color:var(--orange); margin-bottom:3px; }
+.cmr-sub { font-size:11px; color:var(--text2); line-height:1.5; }
+.cmr-btn {
+  background:linear-gradient(135deg, var(--orange), #cc6600);
+  border:none; border-radius:8px; padding:8px 14px;
+  font-size:12px; font-weight:800; color:#000;
+  cursor:pointer; font-family:'Exo 2',sans-serif;
+  white-space:nowrap; transition:0.2s;
+}
+.cmr-btn:active { transform:scale(0.97); }
+
+.new-btn { background:transparent; border:1.5px solid var(--border2); border-radius:var(--r); padding:13px 32px; font-size:13px; font-weight:700; color:var(--text2); cursor:pointer; font-family:'Exo 2',sans-serif; transition:0.2s; }
+.new-btn:active { transform:scale(0.97); }
+
+/* ══ BLOCKED ══ */
+#s-blocked { justify-content:center; align-items:center; padding:36px 24px; text-align:center; }
+.blk-ring { width:120px; height:120px; border-radius:50%; background:rgba(255,61,61,0.08); border:3px solid var(--red); display:flex; align-items:center; justify-content:center; font-size:56px; margin-bottom:24px; }
+.blk-title { font-size:24px; font-weight:900; color:var(--red); margin-bottom:8px; }
+.blk-sub { font-size:14px; color:var(--text2); line-height:1.7; margin-bottom:24px; }
+.blk-temps { background:var(--card); border:1.5px solid rgba(255,61,61,0.25); border-radius:var(--r); padding:18px 24px; display:flex; gap:20px; justify-content:center; margin-bottom:10px; width:100%; max-width:320px; }
+.blk-req { background:var(--card2); border-radius:var(--r); padding:12px 18px; margin-bottom:24px; font-size:13px; color:var(--text2); line-height:1.6; width:100%; max-width:320px; }
+.blk-req strong { color:var(--orange); }
+.blk-office { background:rgba(255,145,0,0.08); border:1.5px solid rgba(255,145,0,0.25); border-radius:var(--r); padding:14px 18px; font-size:13px; font-weight:700; color:var(--orange); margin-bottom:22px; width:100%; max-width:320px; }
+.retry-btn { background:linear-gradient(135deg,var(--red),#aa0000); border:none; border-radius:var(--r); padding:15px 40px; font-size:15px; font-weight:800; color:#fff; cursor:pointer; font-family:'Exo 2',sans-serif; transition:0.2s; }
+.retry-btn:active { transform:scale(0.97); }
+
+/* OVERLAY */
+.overlay { position:fixed; inset:0; background:rgba(6,10,15,0.88); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; z-index:999; flex-direction:column; gap:16px; }
+.overlay.show { display:flex; }
+.ov-spin { width:60px; height:60px; border:3px solid var(--border2); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin{to{transform:rotate(360deg)}}
+.ov-txt { font-size:15px; color:var(--text2); font-weight:600; }
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"><div class="ov-spin"></div><div class="ov-txt" id="ov-txt">...</div></div>
+
+<div class="wrap">
+
+<!-- ══ S0: LINGUA ══ -->
+<div class="screen active" id="s0">
+  <div class="brand">
+    <div class="brand-truck">🚛</div>
+    <div class="brand-name">TRUCK<span>WAY</span></div>
+    <div class="brand-sub">Driver Check-In System</div>
+  </div>
+  <div class="lang-label" style="font-size:22px;font-weight:900;color:var(--text);letter-spacing:2px;">WELCOME — BENVENUTO</div>
+  <div class="lang-grid">
+    <div class="lang-btn" onclick="boot('it')"><span class="lf">🇮🇹</span><span class="ln">Italiano</span><span class="ll">Italian</span></div>
+    <div class="lang-btn" onclick="boot('ar')"><span class="lf">🇸🇦</span><span class="ln">العربية</span><span class="ll">Arabic</span></div>
+    <div class="lang-btn" onclick="boot('fr')"><span class="lf">🇫🇷</span><span class="ln">Français</span><span class="ll">French</span></div>
+    <div class="lang-btn" onclick="boot('ro')"><span class="lf">🇷🇴</span><span class="ln">Română</span><span class="ll">Romanian</span></div>
+    <div class="lang-btn" onclick="boot('en')"><span class="lf">🇬🇧</span><span class="ln">English</span><span class="ll">English</span></div>
+    <div class="lang-btn" onclick="boot('es')"><span class="lf">🇪🇸</span><span class="ln">Español</span><span class="ll">Spanish</span></div>
+  </div>
+</div>
+
+<!-- ══ S1: CARICO / SCARICO ══ -->
+<div class="screen" id="s1">
+  <div class="topbar">
+    <div class="tb-icon">🚛</div>
+    <div class="tb-name">TRUCK<span>WAY</span></div>
+    <div class="tb-time" id="tb-time">--:--</div>
+    <div class="tb-lang" onclick="goLang()">🌐</div>
+  </div>
+  <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:32px 24px; gap:0;">
+    <div class="cs-title" id="cs-title">Seleziona operazione</div>
+    <div class="cs-grid" style="max-width:400px; width:100%;">
+      <div class="cs-btn carico" onclick="goCarico()">
+        <div class="cs-emoji">🚛</div>
+        <div class="cs-name" id="cs-carico-name">CARICO</div>
+        <div class="cs-sub" id="cs-carico-sub">Registra il carico</div>
+      </div>
+      <div class="cs-btn scarico" onclick="goScarico()">
+        <div class="cs-emoji">📦</div>
+        <div class="cs-name" id="cs-scarico-name">SCARICO</div>
+        <div class="cs-sub" id="cs-scarico-sub">Registra lo scarico</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ S-CARICO: FORM ══ -->
+<div class="screen" id="s-carico">
+  <div class="topbar">
+    <div class="tb-icon">🚛</div>
+    <div class="tb-name" style="font-size:14px;">TRUCK<span>WAY</span> — <span style="color:var(--accent)" id="tb-carico-lbl">CARICO</span></div>
+    <div class="tb-time" id="tb-time2">--:--</div>
+    <div class="tb-lang" onclick="goCS()">←</div>
+  </div>
+  <div class="form-body">
+
+    <div class="sec"><div class="sec-icon">🕐</div><div class="sec-title" id="l-dt">Data e Orario</div></div>
+    <div class="auto-row"><div class="auto-val" id="auto-dt">--</div><div class="auto-tag" id="l-auto">AUTO</div></div>
+
+    <div class="sec"><div class="sec-icon">👤</div><div class="sec-title" id="l-drv">Autista</div></div>
+
+    <div class="field">
+      <div class="flabel" id="l-name">Nome</div>
+      <input class="finput" id="c-name" type="text" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <div class="flabel" id="l-phone">Telefono</div>
+      <input class="finput" id="c-phone" type="tel" dir="ltr" autocomplete="off">
+    </div>
+    <div class="field">
+      <div class="flabel" id="l-company">Azienda</div>
+      <input class="finput" id="c-company" type="text" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="sec"><div class="sec-icon">🚛</div><div class="sec-title" id="l-veh">Veicolo</div></div>
+    <div class="frow">
+      <div class="field"><div class="flabel" id="l-truck">Trattore</div><input class="finput" id="c-truck" type="text" dir="ltr" autocomplete="off" style="text-transform:uppercase"></div>
+      <div class="field"><div class="flabel" id="l-trailer">Rimorchio</div><input class="finput" id="c-trailer" type="text" dir="ltr" autocomplete="off" style="text-transform:uppercase"></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel" id="l-dest">Destinazione</div>
+      <input class="finput" id="c-dest" type="text" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="field">
+      <div class="flabel">Numero Ordine <span class="opt-tag" id="l-opt">OPZIONALE</span></div>
+      <input class="finput" id="c-order" type="text" dir="ltr" autocomplete="off" placeholder="es. ORD-001">
+    </div>
+
+    <div class="field">
+      <div class="flabel" id="l-pallet-c">Numero Pallet <span class="opt-tag">OPZIONALE</span></div>
+      <input class="finput" id="c-pallet" type="number" dir="ltr" autocomplete="off" placeholder="es. 24" min="1">
+    </div>
+
+    <div class="sec"><div class="sec-icon">📦</div><div class="sec-title" id="l-cargo">Tipo Merce</div></div>
+    <div class="cargo-grid" id="cargo-grid-c"></div>
+
+    <div class="sec"><div class="sec-icon">🌡️</div><div class="sec-title" id="l-temp">Temperatura DataCOLD</div></div>
+    <div class="photo-zone" id="pz-c" onclick="document.getElementById('cam-c').click()">
+      <div class="pz-icon" id="pz-c-icon">📷</div>
+      <div class="pz-title" id="l-photo">Fotografa la strisciata</div>
+      <div class="pz-sub" id="l-photo-sub">Scatta foto alla stampa DataCOLD</div>
+      <img class="pz-prev" id="prev-c">
+    </div>
+    <input type="file" id="cam-c" accept="image/*" capture="environment" onchange="onPhoto(this,'c')">
+    <div style="text-align:center;margin-top:6px;">
+      <span id="skip-temp-btn" onclick="skipTemp()" style="font-size:12px;color:var(--text3);cursor:pointer;text-decoration:underline;padding:6px 12px;display:inline-block;">Non ho la strisciata</span>
+    </div>
+    <div class="temp-bar" id="tb-c">
+      <div class="tc"><div class="tc-l">T1</div><div class="tc-v" id="t1c">--</div></div>
+      <div class="tsep"></div>
+      <div class="tc"><div class="tc-l">T2</div><div class="tc-v" id="t2c">--</div></div>
+      <div class="tsep"></div>
+      <div class="tverd"><div class="tverd-icon" id="vi-c">?</div><div class="tverd-txt" id="vt-c">--</div></div>
+    </div>
+
+  </div>
+  <div class="submit-wrap">
+    <button class="submit-btn carico" onclick="submitCarico()" id="l-submit-c">INVIA CARICO ✓</button>
+  </div>
+</div>
+
+<!-- ══ S-SCARICO: FORM ══ -->
+<div class="screen" id="s-scarico">
+  <div class="topbar">
+    <div class="tb-icon">📦</div>
+    <div class="tb-name" style="font-size:14px;">TRUCK<span>WAY</span> — <span style="color:var(--green)" id="tb-scarico-lbl">SCARICO</span></div>
+    <div class="tb-time" id="tb-time3">--:--</div>
+    <div class="tb-lang" onclick="goCS()">←</div>
+  </div>
+  <div class="form-body">
+
+    <div class="sec"><div class="sec-icon">🕐</div><div class="sec-title">Data e Orario</div></div>
+    <div class="auto-row"><div class="auto-val" id="auto-dt2">--</div><div class="auto-tag">AUTO</div></div>
+
+    <div class="sec"><div class="sec-icon">👤</div><div class="sec-title" id="l-drv2">Autista</div></div>
+    <div class="field">
+      <div class="flabel" id="l-name2">Nome</div>
+      <input class="finput" id="s-name" type="text" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <div class="flabel" id="l-phone2">Telefono</div>
+      <input class="finput" id="s-phone" type="tel" dir="ltr" autocomplete="off">
+    </div>
+    <div class="field">
+      <div class="flabel" id="l-company2">Azienda</div>
+      <input class="finput" id="s-company" type="text" autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="sec"><div class="sec-icon">🚛</div><div class="sec-title" id="l-veh2">Veicolo</div></div>
+    <div class="frow">
+      <div class="field"><div class="flabel" id="l-truck2">Trattore</div><input class="finput" id="s-truck" type="text" dir="ltr" autocomplete="off" style="text-transform:uppercase"></div>
+      <div class="field"><div class="flabel" id="l-trailer2">Rimorchio</div><input class="finput" id="s-trailer" type="text" dir="ltr" autocomplete="off" style="text-transform:uppercase"></div>
+    </div>
+
+    <div class="field">
+      <div class="flabel" id="l-pallet-s">Numero Pallet <span class="opt-tag">OPZIONALE</span></div>
+      <input class="finput" id="s-pallet" type="number" dir="ltr" autocomplete="off" placeholder="es. 24" min="1">
+    </div>
+
+    <div class="sec"><div class="sec-icon">🌡️</div><div class="sec-title" id="l-temp2">Temperatura Viaggio</div></div>
+    <div class="photo-zone" id="pz-s" onclick="document.getElementById('cam-s').click()">
+      <div class="pz-icon" id="pz-s-icon">📷</div>
+      <div class="pz-title" id="l-photo2">Fotografa strisciata viaggio</div>
+      <div class="pz-sub" id="l-photo-sub2">Scatta foto alla stampa Temperatura Viaggio</div>
+      <img class="pz-prev" id="prev-s">
+    </div>
+    <input type="file" id="cam-s" accept="image/*" capture="environment" onchange="onPhoto(this,'s')">
+    <div class="temp-bar" id="tb-s">
+      <div class="tc"><div class="tc-l">T MIN</div><div class="tc-v" id="t1s">--</div></div>
+      <div class="tsep"></div>
+      <div class="tc"><div class="tc-l">T MAX</div><div class="tc-v" id="t2s">--</div></div>
+      <div class="tsep"></div>
+      <div class="tverd"><div class="tverd-icon" id="vi-s">?</div><div class="tverd-txt" id="vt-s">--</div></div>
+    </div>
+
+    <div class="sec"><div class="sec-icon">✍️</div><div class="sec-title" id="l-sig">Firma Magazzino</div></div>
+    <div class="sig-wrap">
+      <div class="sig-label"><span id="l-sig-sub">Firma qui per confermare la ricezione</span><span class="sig-clear" onclick="clearSig()">✕ Cancella</span></div>
+      <canvas id="sig-canvas" width="460" height="120"></canvas>
+    </div>
+
+  </div>
+  <div class="submit-wrap">
+    <button class="submit-btn scarico" onclick="submitScarico()" id="l-submit-s">INVIA SCARICO ✓</button>
+  </div>
+</div>
+
+<!-- ══ SUCCESS ══ -->
+<div class="screen" id="s-success">
+  <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:36px 24px; text-align:center;">
+    <div class="suc-ring" id="suc-ring">✅</div>
+    <div class="suc-title" id="suc-title">Registrato!</div>
+    <div class="suc-sub" id="suc-sub">Torna al camion e attendi.</div>
+
+    <!-- CARICO: attendi ribalta -->
+    <div class="dock-card" id="dock-card">
+      <div class="dock-lbl" id="l-dock">IN ATTESA RIBALTA</div>
+      <div class="dock-num" id="dock-num">—</div>
+      <div class="dock-dots"><span></span><span></span><span></span></div>
+    </div>
+
+    <!-- CMR -->
+    <div class="cmr-card" id="cmr-card">
+      <div class="cmr-icon">📄</div>
+      <div class="cmr-info">
+        <div class="cmr-title" id="cmr-title">CMR Digitale</div>
+        <div class="cmr-sub" id="cmr-sub">Documento di trasporto generato automaticamente</div>
+      </div>
+      <button class="cmr-btn" id="cmr-btn" onclick="downloadCMR()">⬇ PDF</button>
+    </div>
+
+    <button class="new-btn" onclick="resetAll()" id="l-new">Nuova Registrazione</button>
+  </div>
+</div>
+
+<!-- ══ BLOCKED ══ -->
+<div class="screen" id="s-blocked">
+  <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; padding:36px 24px; text-align:center;">
+    <div class="blk-ring">🚫</div>
+    <div class="blk-title" id="blk-title">Temperatura NON Conforme</div>
+    <div class="blk-sub" id="blk-sub">Il carico non può essere accettato.</div>
+    <div class="blk-temps">
+      <div class="tc"><div class="tc-l">T1</div><div class="tc-v bad" id="blk-t1">--</div></div>
+      <div class="tc"><div class="tc-l">T2</div><div class="tc-v bad" id="blk-t2">--</div></div>
+    </div>
+    <div class="blk-req">Range richiesto: <strong id="blk-range">--</strong></div>
+    <div class="blk-office" id="blk-office">⚠️ Dirigiti all'ufficio immediatamente</div>
+    <button class="retry-btn" onclick="goCS()" id="l-retry">Riprova</button>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const FB = {
+  apiKey: "AIzaSyDHYF8dCZ8jrdrPE7rSHXaNoQlkEsL1iqo",
+  authDomain: "trucksystem-e9b4c.firebaseapp.com",
+  databaseURL: "https://trucksystem-e9b4c-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "trucksystem-e9b4c",
+  storageBucket: "trucksystem-e9b4c.firebasestorage.app",
+  messagingSenderId: "444683319177",
+  appId: "1:444683319177:web:49abf032e46e4ed083d358"
+};
+const fbApp = initializeApp(FB);
+const db = getDatabase(fbApp);
+const auth = getAuth(fbApp);
+
+// ── AUTH PROTECTION ──
+onAuthStateChanged(auth, user => {
+  if(!user){
+    window.location.href = 'truckway-login.html';
+  }
+});
+
+// ══════════════════════════════
+// TRANSLATIONS
+// ══════════════════════════════
+const TR = {
+  it:{dir:'ltr',
+    'cs-title':'Seleziona operazione',
+    'cs-carico-name':'CARICO','cs-carico-sub':'Registra il carico',
+    'cs-scarico-name':'SCARICO','cs-scarico-sub':'Registra lo scarico',
+    'l-dt':'Data e Orario','l-pallet-c':'Numero Pallet','l-auto':'AUTO',
+    'l-drv':'Autista','l-name':'Nome','l-phone':'Telefono','l-company':'Azienda',
+    'l-veh':'Veicolo','l-truck':'Trattore','l-trailer':'Rimorchio','l-dest':'Destinazione',
+    'l-opt':'OPZIONALE','l-cargo':'Tipo Merce',
+    'l-temp':'Temperatura DataCOLD',
+    'l-photo':'Fotografa la strisciata','l-photo-sub':'Scatta foto alla stampa DataCOLD',
+    'l-submit-c':'INVIA CARICO ✓',
+    'l-drv2':'Autista','l-name2':'Nome','l-phone2':'Telefono','l-company2':'Azienda',
+    'l-veh2':'Veicolo','l-truck2':'Trattore','l-trailer2':'Rimorchio',
+    'l-temp2':'Temperatura Viaggio',
+    'l-photo2':'Fotografa strisciata viaggio','l-photo-sub2':'Scatta foto alla stampa Temperatura Viaggio',
+    'l-sig':'Firma Magazzino','l-sig-sub':'Firma qui per confermare la ricezione',
+    'l-submit-s':'INVIA SCARICO ✓',
+    'suc-title-c':'Carico Registrato!','suc-sub-c':'Torna al camion e attendi il numero ribalta.',
+    'suc-title-s':'Scarico Registrato!','suc-sub-s':'CMR generato. Documento salvato.',
+    'l-dock':'IN ATTESA RIBALTA',
+    'cmr-title':'CMR Digitale','cmr-sub':'Documento di trasporto generato automaticamente',
+    'blk-title':'Temperatura NON Conforme','blk-sub':'Il carico non può essere accettato.',
+    'blk-office':'⚠️ Dirigiti all\'ufficio immediatamente',
+    'l-retry':'Riprova','l-new':'Nuova Registrazione',
+    'ov-analyze':'Analisi temperatura...','ov-send':'Invio in corso...',
+    'ph-name':'Nome e Cognome','ph-phone':'+39 ...','ph-company':'Nome azienda',
+    'ph-dest':'Città / Indirizzo',
+  },
+  ar:{dir:'rtl',
+    'cs-title':'اختر العملية',
+    'cs-carico-name':'شحن','cs-carico-sub':'تسجيل الشحن',
+    'cs-scarico-name':'تفريغ','cs-scarico-sub':'تسجيل التفريغ',
+    'l-dt':'التاريخ والوقت','l-pallet-c':'عدد البليتات','l-auto':'تلقائي',
+    'l-drv':'السائق','l-name':'الاسم','l-phone':'الهاتف','l-company':'الشركة',
+    'l-veh':'الشاحنة','l-truck':'الجرار','l-trailer':'المقطورة','l-dest':'الوجهة',
+    'l-opt':'اختياري','l-cargo':'نوع البضاعة',
+    'l-temp':'حرارة DataCOLD',
+    'l-photo':'تصوير ورقة الحرارة','l-photo-sub':'صور ورقة DataCOLD',
+    'l-submit-c':'إرسال الشحن ✓',
+    'l-drv2':'السائق','l-name2':'الاسم','l-phone2':'الهاتف','l-company2':'الشركة',
+    'l-veh2':'الشاحنة','l-truck2':'الجرار','l-trailer2':'المقطورة',
+    'l-temp2':'حرارة الرحلة',
+    'l-photo2':'تصوير ورقة الرحلة','l-photo-sub2':'صور ورقة Temperatura Viaggio',
+    'l-sig':'توقيع المستودع','l-sig-sub':'وقّع هنا لتأكيد الاستلام',
+    'l-submit-s':'إرسال التفريغ ✓',
+    'suc-title-c':'تم تسجيل الشحن!','suc-sub-c':'ارجع للكابينة وانتظر رقم الرصيف.',
+    'suc-title-s':'تم تسجيل التفريغ!','suc-sub-s':'تم توليد CMR وحفظ الوثيقة.',
+    'l-dock':'انتظار رقم الرصيف',
+    'cmr-title':'CMR الرقمي','cmr-sub':'وثيقة النقل تولدت أوتوماتيك',
+    'blk-title':'الحرارة غير مطابقة!','blk-sub':'لا يمكن قبول البضاعة.',
+    'blk-office':'⚠️ توجه للمكتب فوراً',
+    'l-retry':'حاول مجدداً','l-new':'تسجيل جديد',
+    'ov-analyze':'جاري تحليل الحرارة...','ov-send':'جاري الإرسال...',
+    'ph-name':'الاسم الكامل','ph-phone':'+39 ...','ph-company':'اسم الشركة','ph-dest':'المدينة',
+  },
+  fr:{dir:'ltr',
+    'cs-title':'Sélectionnez l\'opération',
+    'cs-carico-name':'CHARGEMENT','cs-carico-sub':'Enregistrer le chargement',
+    'cs-scarico-name':'DÉCHARGEMENT','cs-scarico-sub':'Enregistrer le déchargement',
+    'l-dt':'Date et Heure','l-pallet-c':'Nombre de Palettes','l-auto':'AUTO',
+    'l-drv':'Chauffeur','l-name':'Nom','l-phone':'Téléphone','l-company':'Entreprise',
+    'l-veh':'Véhicule','l-truck':'Tracteur','l-trailer':'Remorque','l-dest':'Destination',
+    'l-opt':'OPTIONNEL','l-cargo':'Type Marchandise',
+    'l-temp':'Température DataCOLD',
+    'l-photo':'Photographier la bande','l-photo-sub':'Photo de la bande DataCOLD',
+    'l-submit-c':'ENVOYER CHARGEMENT ✓',
+    'l-drv2':'Chauffeur','l-name2':'Nom','l-phone2':'Téléphone','l-company2':'Entreprise',
+    'l-veh2':'Véhicule','l-truck2':'Tracteur','l-trailer2':'Remorque',
+    'l-temp2':'Température Voyage',
+    'l-photo2':'Photographier bande voyage','l-photo-sub2':'Photo du relevé Temperatura Viaggio',
+    'l-sig':'Signature Entrepôt','l-sig-sub':'Signez ici pour confirmer la réception',
+    'l-submit-s':'ENVOYER DÉCHARGEMENT ✓',
+    'suc-title-c':'Chargement Enregistré!','suc-sub-c':'Retournez au camion et attendez.',
+    'suc-title-s':'Déchargement Enregistré!','suc-sub-s':'CMR généré. Document sauvegardé.',
+    'l-dock':'EN ATTENTE QUAI',
+    'cmr-title':'CMR Digital','cmr-sub':'Document de transport généré automatiquement',
+    'blk-title':'Température Non Conforme','blk-sub':'La cargaison ne peut pas être acceptée.',
+    'blk-office':'⚠️ Rendez-vous au bureau immédiatement',
+    'l-retry':'Réessayer','l-new':'Nouvel Enregistrement',
+    'ov-analyze':'Analyse température...','ov-send':'Envoi en cours...',
+    'ph-name':'Nom et Prénom','ph-phone':'+39 ...','ph-company':'Nom entreprise','ph-dest':'Ville',
+  },
+  ro:{dir:'ltr',
+    'cs-title':'Selectați operațiunea',
+    'cs-carico-name':'ÎNCĂRCARE','cs-carico-sub':'Înregistrare încărcare',
+    'cs-scarico-name':'DESCĂRCARE','cs-scarico-sub':'Înregistrare descărcare',
+    'l-dt':'Data și Ora','l-pallet-c':'Număr Paleți','l-auto':'AUTO',
+    'l-drv':'Șofer','l-name':'Nume','l-phone':'Telefon','l-company':'Companie',
+    'l-veh':'Vehicul','l-truck':'Cap Tractor','l-trailer':'Remorcă','l-dest':'Destinație',
+    'l-opt':'OPȚIONAL','l-cargo':'Tip Marfă',
+    'l-temp':'Temperatură DataCOLD',
+    'l-photo':'Fotografiați banda','l-photo-sub':'Foto banda DataCOLD',
+    'l-submit-c':'TRIMITE ÎNCĂRCARE ✓',
+    'l-drv2':'Șofer','l-name2':'Nume','l-phone2':'Telefon','l-company2':'Companie',
+    'l-veh2':'Vehicul','l-truck2':'Cap Tractor','l-trailer2':'Remorcă',
+    'l-temp2':'Temperatură Călătorie',
+    'l-photo2':'Fotografiați banda călătorie','l-photo-sub2':'Foto releveu Temperatura Viaggio',
+    'l-sig':'Semnătură Depozit','l-sig-sub':'Semnați aici pentru a confirma recepția',
+    'l-submit-s':'TRIMITE DESCĂRCARE ✓',
+    'suc-title-c':'Încărcare Înregistrată!','suc-sub-c':'Întoarceți-vă la camion și așteptați.',
+    'suc-title-s':'Descărcare Înregistrată!','suc-sub-s':'CMR generat. Document salvat.',
+    'l-dock':'AȘTEPTARE RAMPĂ',
+    'cmr-title':'CMR Digital','cmr-sub':'Document de transport generat automat',
+    'blk-title':'Temperatură Neconformă','blk-sub':'Încărcătura nu poate fi acceptată.',
+    'blk-office':'⚠️ Mergeți la birou imediat',
+    'l-retry':'Încearcă din nou','l-new':'Înregistrare Nouă',
+    'ov-analyze':'Analiză temperatură...','ov-send':'Se trimite...',
+    'ph-name':'Nume și Prenume','ph-phone':'+39 ...','ph-company':'Numele companiei','ph-dest':'Oraș',
+  },
+  en:{dir:'ltr',
+    'cs-title':'Select operation',
+    'cs-carico-name':'LOADING','cs-carico-sub':'Register loading',
+    'cs-scarico-name':'UNLOADING','cs-scarico-sub':'Register unloading',
+    'l-dt':'Date & Time','l-pallet-c':'Number of Pallets','l-auto':'AUTO',
+    'l-drv':'Driver','l-name':'Name','l-phone':'Phone','l-company':'Company',
+    'l-veh':'Vehicle','l-truck':'Truck','l-trailer':'Trailer','l-dest':'Destination',
+    'l-opt':'OPTIONAL','l-cargo':'Cargo Type',
+    'l-temp':'DataCOLD Temperature',
+    'l-photo':'Photograph printout','l-photo-sub':'Take photo of DataCOLD printout',
+    'l-submit-c':'SUBMIT LOADING ✓',
+    'l-drv2':'Driver','l-name2':'Name','l-phone2':'Phone','l-company2':'Company',
+    'l-veh2':'Vehicle','l-truck2':'Truck','l-trailer2':'Trailer',
+    'l-temp2':'Journey Temperature',
+    'l-photo2':'Photograph journey printout','l-photo-sub2':'Take photo of journey temperature printout',
+    'l-sig':'Warehouse Signature','l-sig-sub':'Sign here to confirm receipt',
+    'l-submit-s':'SUBMIT UNLOADING ✓',
+    'suc-title-c':'Loading Registered!','suc-sub-c':'Return to truck and await dock number.',
+    'suc-title-s':'Unloading Registered!','suc-sub-s':'CMR generated. Document saved.',
+    'l-dock':'AWAITING DOCK NUMBER',
+    'cmr-title':'Digital CMR','cmr-sub':'Transport document generated automatically',
+    'blk-title':'Temperature Out of Range','blk-sub':'Load cannot be accepted.',
+    'blk-office':'⚠️ Go to the office immediately',
+    'l-retry':'Try Again','l-new':'New Registration',
+    'ov-analyze':'Analyzing temperature...','ov-send':'Sending...',
+    'ph-name':'Full Name','ph-phone':'+39 ...','ph-company':'Company name','ph-dest':'City',
+  },
+  es:{dir:'ltr',
+    'cs-title':'Selecciona operación',
+    'cs-carico-name':'CARGA','cs-carico-sub':'Registrar la carga',
+    'cs-scarico-name':'DESCARGA','cs-scarico-sub':'Registrar la descarga',
+    'l-dt':'Fecha y Hora','l-pallet-c':'Número de Palés','l-auto':'AUTO',
+    'l-drv':'Conductor','l-name':'Nombre','l-phone':'Teléfono','l-company':'Empresa',
+    'l-veh':'Vehículo','l-truck':'Camión','l-trailer':'Remolque','l-dest':'Destino',
+    'l-opt':'OPCIONAL','l-cargo':'Tipo Mercancía',
+    'l-temp':'Temperatura DataCOLD',
+    'l-photo':'Fotografiar la banda','l-photo-sub':'Foto de la banda DataCOLD',
+    'l-submit-c':'ENVIAR CARGA ✓',
+    'l-drv2':'Conductor','l-name2':'Nombre','l-phone2':'Teléfono','l-company2':'Empresa',
+    'l-veh2':'Vehículo','l-truck2':'Camión','l-trailer2':'Remolque',
+    'l-temp2':'Temperatura Viaje',
+    'l-photo2':'Fotografiar banda viaje','l-photo-sub2':'Foto del registro Temperatura Viaggio',
+    'l-sig':'Firma Almacén','l-sig-sub':'Firme aquí para confirmar la recepción',
+    'l-submit-s':'ENVIAR DESCARGA ✓',
+    'suc-title-c':'¡Carga Registrada!','suc-sub-c':'Vuelve al camión y espera el número de muelle.',
+    'suc-title-s':'¡Descarga Registrada!','suc-sub-s':'CMR generado. Documento guardado.',
+    'l-dock':'ESPERANDO MUELLE',
+    'cmr-title':'CMR Digital','cmr-sub':'Documento de transporte generado automáticamente',
+    'blk-title':'Temperatura No Conforme','blk-sub':'La carga no puede ser aceptada.',
+    'blk-office':'⚠️ Dirígete a la oficina inmediatamente',
+    'l-retry':'Reintentar','l-new':'Nuevo Registro',
+    'ov-analyze':'Analizando temperatura...','ov-send':'Enviando...',
+    'ph-name':'Nombre y Apellido','ph-phone':'+39 ...','ph-company':'Nombre empresa','ph-dest':'Ciudad',
+  },
+};
+
+const CARGO = [
+  {id:'fresco',   emoji:'🥬',min:0,  max:4,  label:{it:'Fresco',   ar:'طازج',   fr:'Frais',      ro:'Proaspăt', en:'Fresh',   es:'Fresco'}},
+  {id:'congelato',emoji:'🧊',min:-22,max:-15,label:{it:'Congelato',ar:'مجمد',   fr:'Congelé',    ro:'Congelat', en:'Frozen',  es:'Congelado'}},
+  {id:'carne',    emoji:'🥩',min:-2, max:2,  label:{it:'Carne',    ar:'لحم',    fr:'Viande',     ro:'Carne',    en:'Meat',    es:'Carne'}},
+  {id:'pesce',    emoji:'🐟',min:0,  max:2,  label:{it:'Pesce',    ar:'سمك',    fr:'Poisson',    ro:'Pește',    en:'Fish',    es:'Pescado'}},
+  {id:'latticini',emoji:'🧀',min:2,  max:6,  label:{it:'Latticini',ar:'ألبان',  fr:'Laitages',   ro:'Lactate',  en:'Dairy',   es:'Lácteos'}},
+  {id:'esotico',  emoji:'🍌',min:8,  max:14, label:{it:'Esotico',  ar:'استوائي',fr:'Exotique',   ro:'Exotic',   en:'Exotic',  es:'Exótico'}},
+];
+
+// STATE
+let lang='it', mode=null, selCargo=null;
+let photoB64_c=null, photoB64_s=null;
+let tempR_c=null, tempR_s=null;
+let currentDriverId=null;
+
+// SIGNATURE
+const sigCanvas = document.getElementById('sig-canvas');
+const sigCtx = sigCanvas.getContext('2d');
+let drawing=false;
+sigCanvas.addEventListener('pointerdown', e=>{drawing=true; sigCtx.beginPath(); sigCtx.moveTo(e.offsetX,e.offsetY);});
+sigCanvas.addEventListener('pointermove', e=>{if(!drawing)return; sigCtx.lineTo(e.offsetX,e.offsetY); sigCtx.strokeStyle='#00e676'; sigCtx.lineWidth=2.5; sigCtx.lineCap='round'; sigCtx.stroke();});
+sigCanvas.addEventListener('pointerup', ()=>drawing=false);
+window.clearSig = ()=>{ sigCtx.clearRect(0,0,sigCanvas.width,sigCanvas.height); };
+
+// SCREENS
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+
+// LANG
+window.boot = function(l){
+  lang=l;
+  const t=TR[l];
+  document.documentElement.dir=t.dir;
+  document.documentElement.lang=l;
+  Object.keys(t).forEach(k=>{ const el=document.getElementById(k); if(el) el.textContent=t[k]; });
+  // placeholders
+  [['c-name','ph-name'],['c-phone','ph-phone'],['c-company','ph-company'],['c-dest','ph-dest'],
+   ['s-name','ph-name'],['s-phone','ph-phone'],['s-company','ph-company']].forEach(([id,ph])=>{
+    const el=document.getElementById(id); if(el) el.placeholder=t[ph]||'';
+  });
+  buildCargo();
+  updateTime();
+  show('s1');
+};
+
+window.goLang = ()=>show('s0');
+window.goCS   = ()=>show('s1');
+
+window.goCarico  = ()=>{ mode='carico';  show('s-carico');  };
+window.goScarico = ()=>{ mode='scarico'; show('s-scarico'); };
+
+// CARGO
+function buildCargo(){
+  const g=document.getElementById('cargo-grid-c');
+  g.innerHTML='';
+  CARGO.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='cargo-card'; d.dataset.id=c.id;
+    const rng=(c.min>=0?'+':'')+c.min+'° → +'+(c.max)+'°';
+    d.innerHTML=`<div class="cargo-emoji">${c.emoji}</div><div class="cargo-name">${c.label[lang]||c.label.it}</div><div class="cargo-range">${rng}</div>`;
+    d.onclick=()=>{ selCargo=c; document.querySelectorAll('.cargo-card').forEach(x=>x.classList.remove('sel')); d.classList.add('sel'); };
+    g.appendChild(d);
+  });
+}
+
+// TIME
+function updateTime(){
+  const now=new Date();
+  const dt=now.toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  ['auto-dt','auto-dt2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=dt; });
+  const t=now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  ['tb-time','tb-time2','tb-time3'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=t; });
+}
+updateTime(); setInterval(updateTime,30000);
+
+// PHOTO + OCR
+window.onPhoto = async function(input,which){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    const b64=e.target.result.split(',')[1];
+    if(which==='c'){ photoB64_c=b64; } else { photoB64_s=b64; }
+    const prev=document.getElementById('prev-'+which);
+    prev.src=e.target.result; prev.style.display='block';
+    const pz=document.getElementById('pz-'+which);
+    pz.classList.add('done');
+    document.getElementById('pz-'+which+'-icon').textContent='✅';
+    await runOCR(which, b64);
+  };
+  reader.readAsDataURL(file);
+};
+
+async function runOCR(which, b64){
+  showOv(TR[lang]['ov-analyze']);
+  const isCarico = which==='c';
+
+  // ── CARICO PROMPT — Temperat. Consegna (short printout with T1/T2 at delivery)
+  const caricoPrompt = selCargo ? `
+You are analyzing a DataCOLD 600 refrigerated truck temperature printout (Italian: "Temperat. Consegna").
+This is the SHORT printout shown at loading/delivery time.
+
+Extract these values:
+- date: the date printed (format DD/MM/YYYY)
+- time: the time printed (format HH:MM:SS or HH:MM)
+- t1: T1 Sensor 1 current temperature (number in °C, e.g. 5.9)
+- t2: T2 Sensor 2 current temperature (number in °C, e.g. 5.9)
+- trailer: vehicle/trailer plate number (e.g. XA527XN)
+- company: company name (e.g. Labservizi)
+- today: is the date today ${new Date().toLocaleDateString('it-IT')}? (boolean)
+- ok: are BOTH t1 and t2 within range ${selCargo.min}°C to ${selCargo.max}°C AND is today=true? (boolean)
+
+Respond ONLY with valid JSON, no markdown:
+{"date":"DD/MM/YYYY","time":"HH:MM","t1":number,"t2":number,"trailer":"XX000XX","company":"name","today":boolean,"ok":boolean}
+` : `Extract T1 and T2 from this DataCOLD printout. Respond ONLY with JSON: {"t1":null,"t2":null,"ok":false}`;
+
+  // ── SCARICO PROMPT — NUMERICA or GRAFICO (full journey printout)
+  const scaricoPrompt = `
+You are analyzing a DataCOLD 600 refrigerated truck journey temperature printout.
+This can be either:
+- NUMERICA: a table with timestamps and T1/T2 values every 10 minutes
+- GRAFICO: a graphic/chart showing temperature over time
+
+Extract these values:
+- type: "NUMERICA" or "GRAFICO"
+- date_start: journey start date (DD/MM/YYYY)
+- time_start: journey start time (HH:MM)
+- date_end: journey end date (DD/MM/YYYY)  
+- time_end: journey end time (HH:MM)
+- t1_min: minimum T1 temperature during journey (number)
+- t1_max: maximum T1 temperature during journey (number)
+- t2_min: minimum T2 temperature during journey (number)
+- t2_max: maximum T2 temperature during journey (number)
+- trailer: vehicle plate number
+- company: company name
+- stable: were temperatures stable throughout? No sudden spikes > 3°C? (boolean)
+- anomalies: any "Veicolo Fermo" stops or unusual readings? (string or null)
+
+Respond ONLY with valid JSON, no markdown:
+{"type":"NUMERICA","date_start":"DD/MM/YYYY","time_start":"HH:MM","date_end":"DD/MM/YYYY","time_end":"HH:MM","t1_min":number,"t1_max":number,"t2_min":number,"t2_max":number,"trailer":"XX","company":"name","stable":boolean,"anomalies":null}
+`;
+
+  try {
+    const res=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",
+        max_tokens:400,
+        messages:[{role:"user",content:[
+          {type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},
+          {type:"text",text: isCarico ? caricoPrompt : scaricoPrompt}
+        ]}]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content.map(i=>i.text||'').join('');
+    const parsed=JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    if(isCarico){
+      tempR_c=parsed;
+      const t1el=document.getElementById('t1c'), t2el=document.getElementById('t2c');
+      const t1str = parsed.t1!==null?(parsed.t1>0?'+':'')+parsed.t1+'°':'?';
+      const t2str = parsed.t2!==null?(parsed.t2>0?'+':'')+parsed.t2+'°':'?';
+      t1el.textContent=t1str;
+      t2el.textContent=t2str;
+      t1el.className='tc-v '+(parsed.ok?'ok':'bad');
+      t2el.className='tc-v '+(parsed.ok?'ok':'bad');
+      document.getElementById('vi-c').textContent=parsed.ok?'✅':'❌';
+      document.getElementById('vt-c').textContent=parsed.ok?(parsed.today?'OK':'DATA ERRATA'):'NON OK';
+      document.getElementById('vt-c').className='tverd-txt '+(parsed.ok?'ok':'bad');
+      // Show trailer verification
+      if(parsed.trailer){
+        const trailerInp=document.getElementById('c-trailer');
+        if(trailerInp && trailerInp.value && !trailerInp.value.toUpperCase().includes(parsed.trailer.toUpperCase())){
+          document.getElementById('vt-c').textContent='⚠️ TARGA DIVERSA!';
+          document.getElementById('vt-c').className='tverd-txt bad';
+          tempR_c.ok=false;
+        }
+      }
+    } else {
+      tempR_s=parsed;
+      const tminEl=document.getElementById('t1s'), tmaxEl=document.getElementById('t2s');
+      const tminStr = parsed.t1_min!==null?(parsed.t1_min>0?'+':'')+parsed.t1_min+'°':'?';
+      const tmaxStr = parsed.t1_max!==null?(parsed.t1_max>0?'+':'')+parsed.t1_max+'°':'?';
+      tminEl.textContent=tminStr;
+      tmaxEl.textContent=tmaxStr;
+      tminEl.className='tc-v '+(parsed.stable?'ok':'bad');
+      tmaxEl.className='tc-v '+(parsed.stable?'ok':'bad');
+      document.getElementById('vi-s').textContent=parsed.stable?'✅':'⚠️';
+      document.getElementById('vt-s').textContent=parsed.stable?'STABILE':(parsed.anomalies||'ANOMALIA');
+      document.getElementById('vt-s').className='tverd-txt '+(parsed.stable?'ok':'bad');
+    }
+    document.getElementById('tb-'+which).classList.add('show');
+  } catch(e){ console.error('OCR Error:',e); }
+  hideOv();
+}
+
+// SUBMIT CARICO
+window.submitCarico = async function(){
+  const name=document.getElementById('c-name').value.trim();
+  const phone=document.getElementById('c-phone').value.trim();
+  const company=document.getElementById('c-company').value.trim();
+  const truck=document.getElementById('c-truck').value.trim();
+  const trailer=document.getElementById('c-trailer').value.trim();
+  const dest=document.getElementById('c-dest').value.trim();
+  const order=document.getElementById('c-order').value.trim()||null;
+
+  const t=TR[lang];
+  if(!name||!phone||!company||!truck||!trailer||!dest){alert(t['ph-name']?'Compila tutti i campi':'Fill all fields');return;}
+  if(!selCargo){alert('Seleziona tipo merce');return;}
+  if(!photoB64_c){alert('Fotografa la strisciata DataCOLD');return;}
+  if(photoB64_c==='skipped'){ tempR_c = tempR_c || { t1:null, t2:null, ok:true, skipped:true }; }
+
+  showOv(TR[lang]['ov-send']);
+  const now=new Date();
+  const data={
+    type:'carico', name, phone, company, truck, trailer, dest,
+    order:order||null,
+    cargo:{id:selCargo.id,name:selCargo.label.it,emoji:selCargo.emoji,min:selCargo.min,max:selCargo.max},
+    t1:tempR_c?.t1??null, t2:tempR_c?.t2??null, tempOk:tempR_c?.ok??false,
+    timestamp:now.toISOString(),
+    time:now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}),
+    date:now.toLocaleDateString('it-IT'),
+    lang, status:tempR_c?.ok?'waiting':'blocked', dock:null,
+  };
+
+  if(tempR_c?.ok){
+    const newRef=await push(ref(db,'drivers'),data);
+    currentDriverId=newRef.key;
+    listenDock(currentDriverId);
+    document.getElementById('suc-ring').textContent='✅';
+    document.getElementById('suc-title').textContent=t['suc-title-c'];
+    document.getElementById('suc-sub').textContent=t['suc-sub-c'];
+    document.getElementById('dock-card').style.display='block';
+    document.getElementById('cmr-card').style.display='none';
+    hideOv(); show('s-success');
+  } else {
+    await push(ref(db,'drivers'),data);
+    document.getElementById('blk-t1').textContent=(tempR_c?.t1>0?'+':'')+tempR_c?.t1+'°';
+    document.getElementById('blk-t2').textContent=(tempR_c?.t2>0?'+':'')+tempR_c?.t2+'°';
+    document.getElementById('blk-range').textContent=(selCargo.min>=0?'+':'')+selCargo.min+'° → +'+selCargo.max+'° ('+selCargo.label[lang]+')';
+    document.getElementById('blk-office').textContent=t['blk-office'];
+    hideOv(); show('s-blocked');
+  }
+};
+
+// SUBMIT SCARICO
+window.submitScarico = async function(){
+  const name=document.getElementById('s-name').value.trim();
+  const phone=document.getElementById('s-phone').value.trim();
+  const company=document.getElementById('s-company').value.trim();
+  const truck=document.getElementById('s-truck').value.trim();
+  const trailer=document.getElementById('s-trailer').value.trim();
+
+  if(!name||!phone||!company||!truck||!trailer){alert('Compila tutti i campi');return;}
+  if(!photoB64_s){alert('Fotografa la strisciata del viaggio');return;}
+
+  showOv(TR[lang]['ov-send']);
+  const now=new Date();
+  const sigData=sigCanvas.toDataURL();
+
+  const data={
+    type:'scarico', name, phone, company, truck, trailer,
+    tmin:tempR_s?.tmin??null, tmax:tempR_s?.tmax??null, stable:tempR_s?.stable??false,
+    pallet: document.getElementById('s-pallet').value ? parseInt(document.getElementById('s-pallet').value) : null,
+    signature: sigData !== 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==' ? 'present' : 'missing',
+    timestamp:now.toISOString(),
+    time:now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}),
+    date:now.toLocaleDateString('it-IT'),
+    lang, type:'scarico',
+  };
+
+  lastScaricoData = {
+    ...data,
+    sigImg: sigCanvas.toDataURL(),
+  };
+  await push(ref(db,'scarichi'),lastScaricoData);
+  const t=TR[lang];
+  document.getElementById('suc-ring').textContent='📄';
+  document.getElementById('suc-title').textContent=t['suc-title-s'];
+  document.getElementById('suc-sub').textContent=t['suc-sub-s'];
+  document.getElementById('dock-card').style.display='none';
+  document.getElementById('cmr-card').style.display='flex';
+  hideOv(); show('s-success');
+};
+
+// LISTEN DOCK
+function listenDock(id){
+  onValue(ref(db,'drivers/'+id+'/dock'),(snap)=>{
+    const dock=snap.val();
+    if(dock){
+      document.getElementById('dock-num').textContent=dock;
+      document.getElementById('dock-dots').style.display='none';
+    }
+  });
+}
+
+// ══════════════════════════════
+// CMR PDF GENERATOR
+// ══════════════════════════════
+let lastScaricoData = null;
+let lastCaricoData = null; // saved when submitCarico runs
+
+window.downloadCMR = function(){
+  const d = lastScaricoData;
+  const c = lastCaricoData;
+  if(!d){ alert('Completa prima lo scarico'); return; }
+
+  const now = new Date();
+  const cmrNum = 'TW-' + now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(Math.floor(Math.random()*9000)+1000);
+
+  const tempStatus = d.stable ? 'CONFORME' : 'ANOMALIA RILEVATA';
+  const tempOk = d.stable;
+  const tminStr = d.tmin !== null ? (d.tmin > 0 ? '+' : '') + d.tmin + '°C' : 'N/D';
+  const tmaxStr = d.tmax !== null ? (d.tmax > 0 ? '+' : '') + d.tmax + '°C' : 'N/D';
+  const t1cStr = c && c.t1 !== null ? (c.t1 > 0 ? '+' : '') + c.t1 + '°C' : 'N/D';
+  const t2cStr = c && c.t2 !== null ? (c.t2 > 0 ? '+' : '') + c.t2 + '°C' : 'N/D';
+  const cargoRange = c && c.cargo ? (c.cargo.min >= 0 ? '+' : '') + c.cargo.min + '°C → +' + c.cargo.max + '°C' : 'N/D';
+
+  const html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CMR \${cmrNum}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: Arial, sans-serif; font-size: 11px; color: #111; background: #fff; padding: 24px; max-width: 800px; margin: 0 auto; }
+
+  .header { display:flex; justify-content:space-between; align-items:center; padding-bottom: 14px; margin-bottom: 18px; border-bottom: 3px solid #00518a; }
+  .logo-box { display:flex; align-items:center; gap:10px; }
+  .logo-truck { font-size:36px; }
+  .logo-name { font-size:22px; font-weight:900; letter-spacing:3px; color:#00518a; }
+  .logo-name span { color:#00c2e0; }
+  .logo-sub { font-size:9px; color:#999; letter-spacing:1px; margin-top:2px; }
+  .cmr-badge { text-align:right; }
+  .cmr-badge h1 { font-size:20px; font-weight:900; color:#00518a; letter-spacing:3px; }
+  .cmr-badge .num { font-size:13px; font-weight:700; color:#555; margin-top:4px; font-family:monospace; }
+  .cmr-badge .type { font-size:9px; color:#999; margin-top:2px; letter-spacing:1px; }
+
+  .section { border:1.5px solid #ddd; border-radius:8px; margin-bottom:14px; overflow:hidden; }
+  .sec-title { background:#00518a; color:#fff; font-size:10px; font-weight:800; letter-spacing:2px; padding:7px 14px; text-transform:uppercase; display:flex; align-items:center; gap:6px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; }
+  .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; }
+  .grid1 { display:grid; grid-template-columns:1fr; }
+  .cell { padding:9px 14px; border-bottom:1px solid #f0f0f0; border-right:1px solid #f0f0f0; }
+  .cell:last-child { border-right:none; }
+  .cell-l { font-size:8px; color:#aaa; font-weight:800; letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+  .cell-v { font-size:13px; font-weight:700; color:#111; }
+  .cell-v.blue { color:#00518a; }
+  .cell-v.green { color:#00a040; }
+  .cell-v.red { color:#cc0000; }
+  .cell-v.orange { color:#cc6600; }
+  .span2 { grid-column:span 2; }
+  .span3 { grid-column:span 3; }
+
+  .temp-section { padding:14px; }
+  .temp-row { display:flex; gap:12px; align-items:stretch; margin-bottom:10px; }
+  .temp-box { flex:1; background:#f5f9ff; border:1.5px solid #dde; border-radius:8px; padding:12px; text-align:center; }
+  .temp-box.ok-box { background:#f0fff6; border-color:#b2f0c8; }
+  .temp-box.warn-box { background:#fff8f0; border-color:#ffd0a0; }
+  .temp-box-l { font-size:9px; color:#888; font-weight:800; letter-spacing:1px; margin-bottom:6px; text-transform:uppercase; }
+  .temp-box-v { font-size:24px; font-weight:900; color:#00518a; }
+  .temp-box-v.warn { color:#cc6600; }
+  .verdict-box { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:8px; padding:14px; border:2px solid; }
+  .verdict-box.ok { background:#f0fff6; border-color:#00c853; }
+  .verdict-box.warn { background:#fff8f0; border-color:#ff9100; }
+  .verdict-icon { font-size:32px; margin-bottom:6px; }
+  .verdict-txt { font-size:11px; font-weight:900; letter-spacing:1px; }
+  .verdict-txt.ok { color:#00a040; }
+  .verdict-txt.warn { color:#cc6600; }
+
+  .range-bar { background:#f5f5f5; border-radius:5px; padding:8px 14px; display:flex; align-items:center; justify-content:space-between; }
+  .range-lbl { font-size:9px; color:#aaa; font-weight:800; letter-spacing:1px; }
+  .range-val { font-size:13px; font-weight:800; color:#cc6600; }
+
+  .sig-box { padding:14px 16px; display:flex; gap:20px; align-items:center; min-height:90px; }
+  .sig-img-wrap { flex:1; border:1px solid #ddd; border-radius:6px; padding:4px; min-height:70px; display:flex; align-items:center; justify-content:center; }
+  .sig-img { max-height:65px; max-width:100%; }
+  .sig-line-wrap { flex:1; text-align:center; }
+  .sig-line-wrap hr { border:none; border-bottom:1.5px solid #333; margin:0 10px 5px; }
+  .sig-line-wrap p { font-size:9px; color:#888; }
+  .sig-meta { text-align:right; font-size:10px; color:#888; line-height:1.7; }
+
+  .footer { margin-top:18px; padding-top:10px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center; }
+  .footer-logo { font-size:13px; font-weight:900; letter-spacing:2px; color:#00518a; }
+  .footer-logo span { color:#00c2e0; }
+  .footer-info { font-size:9px; color:#bbb; text-align:center; line-height:1.6; }
+  .footer-num { font-size:10px; color:#999; font-family:monospace; }
+
+  .print-btn { background:#00518a; color:#fff; border:none; padding:11px 26px; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer; margin:4px; }
+  .close-btn { background:#f0f0f0; color:#333; border:none; padding:11px 20px; border-radius:6px; font-size:13px; cursor:pointer; margin:4px; }
+  @media print { .no-print { display:none!important; } body { padding:10px; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo-box">
+    <div class="logo-truck">🚛</div>
+    <div>
+      <div class="logo-name">TRUCK<span>WAY</span></div>
+      <div class="logo-sub">DRIVER CHECK-IN SYSTEM</div>
+    </div>
+  </div>
+  <div class="cmr-badge">
+    <h1>CMR</h1>
+    <div class="type">LETTERA DI VETTURA DIGITALE</div>
+    <div class="num">\${cmrNum}</div>
+  </div>
+</div>
+
+<!-- CONDUCENTE -->
+<div class="section">
+  <div class="sec-title">👤 Dati Conducente</div>
+  <div class="grid2">
+    <div class="cell"><div class="cell-l">Nome Conducente</div><div class="cell-v blue">\${d.name}</div></div>
+    <div class="cell"><div class="cell-l">Telefono</div><div class="cell-v">\${d.phone}</div></div>
+    <div class="cell"><div class="cell-l">Azienda</div><div class="cell-v">\${d.company}</div></div>
+    <div class="cell"><div class="cell-l">Data Scarico</div><div class="cell-v">\${d.date} — \${d.time}</div></div>
+  </div>
+</div>
+
+<!-- VEICOLO -->
+<div class="section">
+  <div class="sec-title">🚛 Dati Veicolo</div>
+  <div class="grid2">
+    <div class="cell"><div class="cell-l">Trattore</div><div class="cell-v blue">\${d.truck}</div></div>
+    <div class="cell"><div class="cell-l">Rimorchio</div><div class="cell-v blue">\${d.trailer}</div></div>
+  </div>
+</div>
+
+<!-- MERCE -->
+<div class="section">
+  <div class="sec-title">📦 Dati Merce</div>
+  <div class="grid3">
+    <div class="cell"><div class="cell-l">Tipo Merce</div><div class="cell-v">\${c ? c.cargo.emoji+' '+c.cargo.name : 'N/D'}</div></div>
+    <div class="cell"><div class="cell-l">Destinazione</div><div class="cell-v">\${c ? c.dest||'N/D' : 'N/D'}</div></div>
+    <div class="cell"><div class="cell-l">Numero Ordine</div><div class="cell-v orange">\${c && c.order ? c.order : '—'}</div></div>
+    <div class="cell"><div class="cell-l">Data Carico</div><div class="cell-v">\${c ? c.date+' '+c.time : 'N/D'}</div></div>
+    <div class="cell"><div class="cell-l">T1 al Carico</div><div class="cell-v \${c && c.tempOk ? 'green' : 'red'}">\${t1cStr}</div></div>
+    <div class="cell"><div class="cell-l">T2 al Carico</div><div class="cell-v \${c && c.tempOk ? 'green' : 'red'}">\${t2cStr}</div></div>
+  </div>
+</div>
+
+<!-- TEMPERATURA VIAGGIO -->
+<div class="section">
+  <div class="sec-title">🌡️ Controllo Temperatura Viaggio</div>
+  <div class="temp-section">
+    <div class="temp-row">
+      <div class="temp-box">
+        <div class="temp-box-l">T Minima Registrata</div>
+        <div class="temp-box-v">\${tminStr}</div>
+      </div>
+      <div class="temp-box">
+        <div class="temp-box-l">T Massima Registrata</div>
+        <div class="temp-box-v \${tempOk ? '' : 'warn'}">\${tmaxStr}</div>
+      </div>
+      <div class="verdict-box \${tempOk ? 'ok' : 'warn'}">
+        <div class="verdict-icon">\${tempOk ? '✅' : '⚠️'}</div>
+        <div class="verdict-txt \${tempOk ? 'ok' : 'warn'}">\${tempStatus}</div>
+      </div>
+    </div>
+    <div class="range-bar">
+      <div class="range-lbl">RANGE RICHIESTO</div>
+      <div class="range-val">\${cargoRange}</div>
+    </div>
+  </div>
+</div>
+
+<!-- FIRMA -->
+<div class="section">
+  <div class="sec-title">✍️ Firma Magazzino</div>
+  <div class="sig-box">
+    <div class="sig-img-wrap">
+      \${d.sigImg ? `<img class="sig-img" src="\${d.sigImg}" alt="Firma">` : '<span style="font-size:11px;color:#ccc;">Firma non disponibile</span>'}
+    </div>
+    <div class="sig-line-wrap">
+      <hr>
+      <p>Firma e Timbro Responsabile Magazzino</p>
+    </div>
+    <div class="sig-meta">
+      <div><strong>Data:</strong> \${d.date}</div>
+      <div><strong>Ora:</strong> \${d.time}</div>
+      <div><strong>CMR:</strong> \${cmrNum}</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-logo">TRUCK<span>WAY</span></div>
+  <div class="footer-info">
+    Documento generato automaticamente da TruckWay Driver System<br>
+    Valido come ricevuta interna di trasporto refrigerato
+  </div>
+  <div class="footer-num">\${cmrNum}</div>
+</div>
+
+<br>
+<div class="no-print" style="text-align:center;margin-top:16px;">
+  <button class="print-btn" onclick="window.print()">🖨️ Stampa / Salva PDF</button>
+  <button class="close-btn" onclick="window.close()">✕ Chiudi</button>
+</div>
+
+</body>
+</html>`;
+
+  const win  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
+  win.focus();
+};
+
+// SKIP TEMPERATURE
+window.skipTemp = function(){
+  photoB64_c = 'skipped';
+  tempR_c = { t1: null, t2: null, ok: true, skipped: true };
+  const pz = document.getElementById('pz-c');
+  pz.classList.add('done');
+  pz.style.borderColor = 'var(--orange)';
+  document.getElementById('pz-c-icon').textContent = '⚠️';
+  document.getElementById('skip-temp-btn').textContent = '✓ Temperatura da verificare in ufficio';
+  document.getElementById('skip-temp-btn').style.color = 'var(--orange)';
+  document.getElementById('skip-temp-btn').style.cursor = 'default';
+  document.getElementById('skip-temp-btn').onclick = null;
+};
+
+// RESET
+window.resetAll = function(){
+  photoB64_c=null; photoB64_s=null; tempR_c=null; tempR_s=null;
+  selCargo=null; currentDriverId=null;
+  ['c-name','c-phone','c-company','c-truck','c-trailer','c-dest','c-order','c-pallet',
+   's-name','s-phone','s-company','s-truck','s-trailer','s-pallet'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  ['prev-c','prev-s'].forEach(id=>{const el=document.getElementById(id); if(el) el.style.display='none';});
+  ['pz-c','pz-s'].forEach(id=>{const el=document.getElementById(id); if(el){el.classList.remove('done');}});
+  ['pz-c-icon','pz-s-icon'].forEach(id=>{const el=document.getElementById(id); if(el) el.textContent='📷';});
+  ['tb-c','tb-s'].forEach(id=>{const el=document.getElementById(id); if(el) el.classList.remove('show');});
+  document.querySelectorAll('.cargo-card').forEach(el=>el.classList.remove('sel'));
+  clearSig();
+  ['cam-c','cam-s'].forEach(id=>{const el=document.getElementById(id); if(el) el.value='';});
+  document.getElementById('dock-num').textContent='—';
+  document.getElementById('dock-dots').style.display='flex';
+  show('s0');
+};
+
+function showOv(txt){ document.getElementById('ov-txt').textContent=txt||'...'; document.getElementById('overlay').classList.add('show'); }
+function hideOv(){ document.getElementById('overlay').classList.remove('show'); }
+</script>
+</body>
+</html>

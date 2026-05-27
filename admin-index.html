@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="it" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TruckWay — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#060a0f; --card:#0f1923; --card2:#162030;
+  --border:rgba(255,255,255,0.08); --border2:rgba(255,255,255,0.14);
+  --accent:#00d4ff; --green:#00e676; --red:#ff3d3d; --orange:#ff9100;
+  --text:#e8f4ff; --text2:#6b8fa8; --text3:#2a4a60;
+  --r:14px; --r2:20px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Exo 2',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image: linear-gradient(rgba(0,212,255,0.02) 1px,transparent 1px), linear-gradient(90deg,rgba(0,212,255,0.02) 1px,transparent 1px);
+  background-size:44px 44px; pointer-events:none;
+}
+
+.topbar {
+  background:rgba(6,10,15,0.95); border-bottom:1px solid var(--border2);
+  padding:0 24px; display:flex; align-items:center; gap:14px;
+  height:58px; position:sticky; top:0; z-index:100; backdrop-filter:blur(12px);
+}
+.tb-logo { display:flex; align-items:center; gap:9px; }
+.tb-icon { width:34px; height:34px; background:linear-gradient(135deg,var(--accent),#007aaa); border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:17px; }
+.tb-name { font-size:17px; font-weight:900; letter-spacing:2px; }
+.tb-name span { color:var(--accent); }
+.tb-badge { font-size:10px; font-weight:800; letter-spacing:1px; color:var(--orange); background:rgba(255,145,0,0.1); border:1px solid rgba(255,145,0,0.25); border-radius:6px; padding:5px 10px; margin-left:4px; }
+.tb-sep { flex:1; }
+.tb-logout { font-size:12px; color:var(--text2); cursor:pointer; background:var(--card); border:1px solid var(--border2); border-radius:7px; padding:6px 12px; transition:0.2s; font-family:'Exo 2',sans-serif; }
+
+.main { max-width:900px; margin:0 auto; padding:28px 20px; position:relative; z-index:1; }
+
+/* STATS */
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:28px; }
+.stat { background:var(--card); border:1px solid var(--border); border-radius:var(--r); padding:16px; text-align:center; }
+.stat-val { font-size:32px; font-weight:900; line-height:1; margin-bottom:4px; }
+.stat-val.blue { color:var(--accent); }
+.stat-val.green { color:var(--green); }
+.stat-val.orange { color:var(--orange); }
+.stat-lbl { font-size:9px; color:var(--text3); font-weight:800; letter-spacing:1px; text-transform:uppercase; }
+
+/* ADD COMPANY */
+.add-section {
+  background:var(--card); border:1.5px solid var(--border2);
+  border-radius:var(--r2); padding:22px; margin-bottom:24px;
+}
+.sec-title { font-size:11px; font-weight:800; color:var(--accent); letter-spacing:2px; text-transform:uppercase; margin-bottom:16px; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.field { display:flex; flex-direction:column; gap:6px; }
+.flabel { font-size:11px; font-weight:700; color:var(--text2); }
+.finput {
+  background:var(--card2); border:1.5px solid var(--border2);
+  border-radius:var(--r); padding:12px 14px;
+  font-size:14px; color:var(--text);
+  font-family:'Exo 2',sans-serif; outline:none; width:100%;
+  transition:border-color 0.2s;
+}
+.finput:focus { border-color:var(--accent); }
+.finput::placeholder { color:var(--text3); }
+
+.add-btn {
+  width:100%; background:linear-gradient(135deg,var(--green),#00a855);
+  border:none; border-radius:var(--r); padding:14px;
+  font-size:14px; font-weight:900; color:#000;
+  cursor:pointer; font-family:'Exo 2',sans-serif;
+  letter-spacing:0.5px; transition:all 0.2s;
+  box-shadow:0 3px 14px rgba(0,230,118,0.25);
+  margin-top:4px;
+}
+.add-btn:active { transform:scale(0.98); }
+
+/* COMPANIES LIST */
+.companies-title { font-size:16px; font-weight:800; margin-bottom:14px; }
+.companies { display:flex; flex-direction:column; gap:10px; }
+
+.company-card {
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:var(--r2); padding:16px 18px;
+  display:flex; align-items:center; gap:16px;
+  transition:border-color 0.2s;
+}
+.company-card:hover { border-color:var(--border2); }
+
+.company-logo {
+  width:44px; height:44px; border-radius:12px;
+  background:linear-gradient(135deg, var(--accent), #007aaa);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; flex-shrink:0;
+  font-weight:900; color:#000;
+}
+
+.company-info { flex:1; min-width:0; }
+.company-name { font-size:15px; font-weight:800; }
+.company-email { font-size:11px; color:var(--text2); margin-top:2px; }
+.company-meta { display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
+
+.meta-chip {
+  font-size:10px; font-weight:700;
+  background:var(--card2); border:1px solid var(--border2);
+  border-radius:5px; padding:2px 8px;
+  color:var(--text2);
+}
+.meta-chip.active { color:var(--green); background:rgba(0,230,118,0.08); border-color:rgba(0,230,118,0.2); }
+.meta-chip.inactive { color:var(--red); background:rgba(255,61,61,0.08); border-color:rgba(255,61,61,0.2); }
+
+.company-actions { display:flex; gap:8px; flex-shrink:0; }
+
+.action-chip {
+  background:var(--card2); border:1px solid var(--border2);
+  border-radius:8px; padding:7px 12px;
+  font-size:11px; font-weight:700; color:var(--text2);
+  cursor:pointer; transition:all 0.2s;
+  font-family:'Exo 2',sans-serif;
+}
+.action-chip:active { transform:scale(0.96); }
+.action-chip.danger { color:var(--red); border-color:rgba(255,61,61,0.25); }
+.action-chip.success { color:var(--green); border-color:rgba(0,230,118,0.25); }
+
+/* TOAST */
+.toast {
+  position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px);
+  background:var(--card); border:1.5px solid var(--green);
+  border-radius:var(--r); padding:12px 20px;
+  font-size:13px; font-weight:700; color:var(--green);
+  z-index:9999; opacity:0; transition:all 0.3s ease;
+  white-space:nowrap; box-shadow:0 6px 24px rgba(0,0,0,0.4);
+}
+.toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+
+/* MODAL */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(6,10,15,0.88);
+  backdrop-filter:blur(6px); display:none; align-items:center;
+  justify-content:center; z-index:999;
+}
+.modal-overlay.show { display:flex; }
+.modal {
+  background:var(--card); border:1.5px solid var(--border2);
+  border-radius:var(--r2); padding:26px; width:90%; max-width:380px;
+  display:flex; flex-direction:column; gap:14px;
+  animation:fu 0.25s ease;
+}
+@keyframes fu { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.modal-title { font-size:17px; font-weight:800; }
+.modal-sub { font-size:13px; color:var(--text2); line-height:1.6; }
+.modal-btns { display:flex; gap:10px; }
+.modal-cancel { flex:1; background:transparent; border:1.5px solid var(--border2); border-radius:var(--r); padding:12px; font-size:13px; font-weight:700; color:var(--text2); cursor:pointer; font-family:'Exo 2',sans-serif; }
+.modal-confirm { flex:2; background:linear-gradient(135deg,var(--red),#aa0000); border:none; border-radius:var(--r); padding:12px; font-size:13px; font-weight:800; color:#fff; cursor:pointer; font-family:'Exo 2',sans-serif; }
+
+/* OVERLAY */
+.overlay { position:fixed; inset:0; background:rgba(6,10,15,0.88); backdrop-filter:blur(6px); display:none; align-items:center; justify-content:center; z-index:999; flex-direction:column; gap:16px; }
+.overlay.show { display:flex; }
+.spinner { width:52px; height:52px; border:3px solid var(--border2); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.ov-txt { font-size:14px; color:var(--text2); font-weight:600; }
+
+@media(max-width:600px) {
+  .form-grid { grid-template-columns:1fr; }
+  .stats { grid-template-columns:1fr 1fr 1fr; }
+  .company-actions { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay"><div class="spinner"></div><div class="ov-txt" id="ov-txt">...</div></div>
+<div class="toast" id="toast"></div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="del-modal">
+  <div class="modal">
+    <div class="modal-title">🗑️ Elimina Azienda</div>
+    <div class="modal-sub" id="del-modal-sub">Sei sicuro? Tutti i dati verranno eliminati.</div>
+    <div class="modal-btns">
+      <button class="modal-cancel" onclick="closeDelModal()">Annulla</button>
+      <button class="modal-confirm" onclick="confirmDelete()">Elimina</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-logo">
+    <div class="tb-icon">🚛</div>
+    <div class="tb-name">TRUCK<span>WAY</span></div>
+    <div class="tb-badge">⚙️ ADMIN</div>
+  </div>
+  <div class="tb-sep"></div>
+  <button class="tb-logout" onclick="doLogout()">← Esci</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="stat-val blue" id="s-total">0</div><div class="stat-lbl">Aziende</div></div>
+    <div class="stat"><div class="stat-val green" id="s-active">0</div><div class="stat-lbl">Attive</div></div>
+    <div class="stat"><div class="stat-val orange" id="s-revenue">€0</div><div class="stat-lbl">Entrate/mese</div></div>
+  </div>
+
+  <!-- ADD COMPANY -->
+  <div class="add-section">
+    <div class="sec-title">➕ Aggiungi Nuova Azienda</div>
+    <div class="form-grid">
+      <div class="field">
+        <div class="flabel">Nome Azienda</div>
+        <input class="finput" id="new-name" type="text" placeholder="es. Stef Roma SRL">
+      </div>
+      <div class="field">
+        <div class="flabel">Email Login</div>
+        <input class="finput" id="new-email" type="email" placeholder="stef.roma@email.com">
+      </div>
+      <div class="field">
+        <div class="flabel">Password</div>
+        <input class="finput" id="new-pass" type="text" placeholder="min. 6 caratteri">
+      </div>
+      <div class="field">
+        <div class="flabel">Prezzo/mese (€)</div>
+        <input class="finput" id="new-price" type="number" placeholder="99" value="99">
+      </div>
+    </div>
+    <button class="add-btn" onclick="addCompany()" style="margin-top:14px;">➕ Crea Account Azienda</button>
+  </div>
+
+  <!-- COMPANIES -->
+  <div class="companies-title">🏢 Aziende Registrate</div>
+  <div class="companies" id="companies-list">
+    <div style="text-align:center;padding:40px;color:var(--text3);font-size:13px;font-weight:600;">
+      Nessuna azienda registrata
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, set, get, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB = {
+  apiKey: "AIzaSyDHYF8dCZ8jrdrPE7rSHXaNoQlkEsL1iqo",
+  authDomain: "trucksystem-e9b4c.firebaseapp.com",
+  databaseURL: "https://trucksystem-e9b4c-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "trucksystem-e9b4c",
+  storageBucket: "trucksystem-e9b4c.firebasestorage.app",
+  messagingSenderId: "444683319177",
+  appId: "1:444683319177:web:49abf032e46e4ed083d358"
+};
+
+const app = initializeApp(FB);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+// ADMIN UID — cambia con il tuo UID Firebase
+const ADMIN_UID = 'BdVvcXmQN2WfmjWOcWw71m8w11c2';
+
+let companies = {};
+let deleteTargetId = null;
+
+// CHECK AUTH
+showOv('Verifica accesso...');
+onAuthStateChanged(auth, user => {
+  hideOv();
+  if(!user){
+    window.location.href = 'truckway-login.html';
+    return;
+  }
+  loadCompanies();
+});
+
+// LOAD COMPANIES
+function loadCompanies(){
+  onValue(ref(db,'companies'), snap => {
+    companies = snap.val() || {};
+    renderCompanies();
+    updateStats();
+  });
+}
+
+function updateStats(){
+  const list = Object.values(companies);
+  const active = list.filter(c=>c.active);
+  const revenue = active.reduce((sum,c)=>sum+(c.price||99),0);
+  document.getElementById('s-total').textContent = list.length;
+  document.getElementById('s-active').textContent = active.length;
+  document.getElementById('s-revenue').textContent = '€'+revenue;
+}
+
+function renderCompanies(){
+  const el = document.getElementById('companies-list');
+  const list = Object.entries(companies);
+
+  if(list.length===0){
+    el.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);font-size:13px;font-weight:600;">Nessuna azienda registrata</div>';
+    return;
+  }
+
+  el.innerHTML='';
+  list.forEach(([uid,c])=>{
+    const card = document.createElement('div');
+    card.className='company-card';
+    const initial = (c.name||'?')[0].toUpperCase();
+    card.innerHTML=`
+      <div class="company-logo">${initial}</div>
+      <div class="company-info">
+        <div class="company-name">${c.name||'--'}</div>
+        <div class="company-email">${c.email||'--'}</div>
+        <div class="company-meta">
+          <div class="meta-chip ${c.active?'active':'inactive'}">${c.active?'✅ Attiva':'❌ Sospesa'}</div>
+          <div class="meta-chip">💰 €${c.price||99}/mese</div>
+          <div class="meta-chip">📅 ${c.createdAt||'--'}</div>
+        </div>
+      </div>
+      <div class="company-actions">
+        <button class="action-chip ${c.active?'danger':'success'}" onclick="toggleActive('${uid}',${c.active})">${c.active?'Sospendi':'Attiva'}</button>
+        <button class="action-chip danger" onclick="openDelModal('${uid}','${c.name}')">🗑️</button>
+      </div>
+    `;
+    el.appendChild(card);
+  });
+}
+
+// ADD COMPANY
+window.addCompany = async function(){
+  const name = document.getElementById('new-name').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  const pass = document.getElementById('new-pass').value.trim();
+  const price = parseInt(document.getElementById('new-price').value)||99;
+
+  if(!name||!email||!pass){ showToast('❌ Compila tutti i campi'); return; }
+  if(pass.length < 6){ showToast('❌ Password minimo 6 caratteri'); return; }
+
+  showOv('Creazione account...');
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const uid = cred.user.uid;
+    const now = new Date().toLocaleDateString('it-IT');
+
+    await set(ref(db,'companies/'+uid), {
+      name, email, price, active: true,
+      createdAt: now,
+      uid,
+    });
+
+    // Clear form
+    ['new-name','new-email','new-pass'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('new-price').value='99';
+
+    showToast('✅ Azienda '+name+' creata!');
+  } catch(e) {
+    if(e.code==='auth/email-already-in-use'){
+      showToast('❌ Email già registrata');
+    } else {
+      showToast('❌ Errore: '+e.message);
+    }
+  }
+  hideOv();
+};
+
+// TOGGLE ACTIVE
+window.toggleActive = async function(uid, currentState){
+  try {
+    await update(ref(db,'companies/'+uid), { active: !currentState });
+    showToast(currentState ? '⏸️ Azienda sospesa' : '✅ Azienda attivata');
+  } catch(e){ showToast('❌ Errore'); }
+};
+
+// DELETE
+window.openDelModal = function(uid, name){
+  deleteTargetId = uid;
+  document.getElementById('del-modal-sub').textContent = `Eliminare "${name}"? Tutti i dati verranno rimossi.`;
+  document.getElementById('del-modal').classList.add('show');
+};
+
+window.closeDelModal = function(){
+  document.getElementById('del-modal').classList.remove('show');
+  deleteTargetId = null;
+};
+
+window.confirmDelete = async function(){
+  if(!deleteTargetId) return;
+  try {
+    await remove(ref(db,'companies/'+deleteTargetId));
+    showToast('🗑️ Azienda eliminata');
+  } catch(e){ showToast('❌ Errore eliminazione'); }
+  closeDelModal();
+};
+
+// LOGOUT
+window.doLogout = async function(){
+  await signOut(auth);
+  window.location.href = 'truckway-login.html';
+};
+
+function showOv(txt){ document.getElementById('ov-txt').textContent=txt; document.getElementById('overlay').classList.add('show'); }
+function hideOv(){ document.getElementById('overlay').classList.remove('show'); }
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="it" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TruckWay — Dashboard Ufficio</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060a0f;
+  --bg2: #0b1118;
+  --card: #0f1923;
+  --card2: #162030;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --accent: #00d4ff;
+  --green: #00e676;
+  --red: #ff3d3d;
+  --orange: #ff9100;
+  --text: #e8f4ff;
+  --text2: #6b8fa8;
+  --text3: #2a4a60;
+  --r: 14px;
+  --r2: 20px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: 'Exo 2', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.02) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events:none; z-index:0;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: rgba(6,10,15,0.95);
+  border-bottom: 1px solid var(--border2);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 58px;
+  position: sticky; top:0; z-index:100;
+  backdrop-filter: blur(12px);
+}
+
+.tb-logo {
+  display: flex; align-items: center; gap: 9px;
+}
+
+.tb-logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--accent), #007aaa);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  box-shadow: 0 3px 10px rgba(0,212,255,0.25);
+}
+
+.tb-logo-name {
+  font-size: 17px; font-weight: 900;
+  letter-spacing: 2px;
+}
+.tb-logo-name span { color: var(--accent); }
+
+.tb-sep { flex:1; }
+
+.tb-badge {
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--text2);
+  background: var(--card2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 5px 10px;
+  display: none;
+}
+
+@media(min-width:600px){ .tb-badge { display:block; } }
+
+.tb-time {
+  font-size: 18px; font-weight: 800;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── STATS ── */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  padding: 16px 16px 0;
+  position: relative; z-index:1;
+}
+
+.stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 12px 10px;
+  text-align: center;
+}
+
+.stat-val { font-size: 26px; font-weight: 900; line-height: 1; margin-bottom: 4px; }
+.stat-val.blue { color: var(--accent); }
+.stat-val.green { color: var(--green); }
+.stat-val.red { color: var(--red); }
+.stat-val.orange { color: var(--orange); }
+.stat-lbl { font-size: 9px; color: var(--text3); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+
+/* ── FILTERS ── */
+.filters {
+  display: flex;
+  gap: 8px;
+  padding: 14px 16px 0;
+  overflow-x: auto;
+  position: relative; z-index:1;
+  scrollbar-width: none;
+}
+.filters::-webkit-scrollbar { display:none; }
+
+.fbtn {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 11px; font-weight: 800;
+  color: var(--text2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: 'Exo 2', sans-serif;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.fbtn:active { transform: scale(0.96); }
+.fbtn.active { background: rgba(0,212,255,0.08); border-color: var(--accent); color: var(--accent); }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  display: flex;
+  gap: 0;
+  position: relative; z-index:1;
+  min-height: calc(100vh - 58px);
+}
+
+/* ── DRIVER LIST ── */
+.list-panel {
+  flex: 1;
+  padding: 14px 16px;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+@media(min-width: 900px) {
+  .list-panel {
+    max-width: 480px;
+    border-right: 1px solid var(--border);
+  }
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.list-title { font-size: 15px; font-weight: 800; }
+
+.list-count {
+  font-size: 11px; font-weight: 800;
+  color: var(--accent);
+  background: rgba(0,212,255,0.1);
+  border: 1px solid rgba(0,212,255,0.2);
+  border-radius: 12px;
+  padding: 3px 10px;
+}
+
+.drivers { display: flex; flex-direction: column; gap: 10px; }
+
+/* ── DRIVER CARD ── */
+.dcard {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r2);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.dcard::before {
+  content:'';
+  position:absolute;
+  left:0; top:0; bottom:0;
+  width:4px;
+  border-radius:4px 0 0 4px;
+}
+
+.dcard.ok::before { background: var(--green); }
+.dcard.fail::before { background: var(--red); }
+.dcard.done::before { background: var(--text3); }
+.dcard.missing::before { background: var(--orange); }
+
+.dcard:active { transform: scale(0.99); }
+.dcard.selected { border-color: var(--accent); background: rgba(0,212,255,0.04); }
+
+.dcard-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.dcard-name { font-size: 15px; font-weight: 800; }
+.dcard-company { font-size: 11px; color: var(--text2); margin-top: 2px; font-weight: 600; }
+
+.badge {
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.badge.ok { background: rgba(0,230,118,0.1); border: 1px solid rgba(0,230,118,0.25); color: var(--green); }
+.badge.fail { background: rgba(255,61,61,0.1); border: 1px solid rgba(255,61,61,0.25); color: var(--red); }
+.badge.waiting { background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.25); color: var(--accent); }
+.badge.done { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text3); }
+.badge.missing { background: rgba(255,145,0,0.1); border: 1px solid rgba(255,145,0,0.25); color: var(--orange); }
+
+.dcard-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.dchip {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; color: var(--text2); font-weight: 600;
+}
+
+.dcard-temps {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.dtbox {
+  background: var(--card2);
+  border-radius: 7px;
+  padding: 4px 9px;
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 700;
+}
+.dtbox-l { font-size: 9px; color: var(--text3); font-weight: 800; }
+.dtbox-v { color: var(--text); }
+.dtbox-v.bad { color: var(--red); }
+.dtbox-v.warn { color: var(--orange); }
+
+.dcard-time { font-size: 10px; color: var(--text3); margin-top: 6px; font-weight: 600; }
+
+.dock-sent {
+  margin-top: 8px;
+  background: rgba(0,230,118,0.06);
+  border: 1px solid rgba(0,230,118,0.15);
+  border-radius: 7px;
+  padding: 5px 10px;
+  font-size: 11px; color: var(--green); font-weight: 700;
+}
+
+/* ── DETAIL PANEL ── */
+.detail-panel {
+  display: none;
+  width: 100%;
+  background: var(--bg2);
+  border-left: 1px solid var(--border);
+  padding: 20px 18px;
+  flex-direction: column;
+  gap: 14px;
+  position: relative; z-index:1;
+}
+
+@media(min-width: 900px) {
+  .detail-panel {
+    display: flex;
+    width: 380px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 58px;
+    height: calc(100vh - 58px);
+    overflow-y: auto;
+  }
+}
+
+/* Mobile detail modal */
+.detail-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(6,10,15,0.92);
+  backdrop-filter: blur(8px);
+  z-index: 200;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.detail-modal.show { display: flex; }
+.detail-modal-inner {
+  background: var(--bg2);
+  border-radius: var(--r2) var(--r2) 0 0;
+  margin-top: auto;
+  padding: 20px 18px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+.modal-handle {
+  width: 40px; height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+  margin: 0 auto 8px;
+}
+.modal-close {
+  position: absolute;
+  top: 16px; right: 18px;
+  font-size: 20px;
+  color: var(--text2);
+  cursor: pointer;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* DETAIL CONTENT */
+.detail-empty {
+  flex:1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px; color: var(--text3); text-align: center;
+}
+.detail-empty-icon { font-size: 44px; opacity: 0.3; }
+.detail-empty-txt { font-size: 13px; font-weight: 600; line-height: 1.5; }
+
+.det-section-title {
+  font-size: 10px; font-weight: 800;
+  color: var(--accent); letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 2px;
+}
+
+.det-name { font-size: 20px; font-weight: 900; }
+.det-company { font-size: 13px; color: var(--text2); font-weight: 600; margin-top: 2px; }
+
+.det-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.det-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 10px 12px;
+}
+.det-box-lbl { font-size: 9px; color: var(--text3); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+.det-box-val { font-size: 13px; font-weight: 800; }
+.det-box-val.blue { color: var(--accent); }
+.det-box-val.green { color: var(--green); }
+.det-box-val.red { color: var(--red); }
+.det-box-val.orange { color: var(--orange); }
+
+/* TEMP DISPLAY */
+.temp-display {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px;
+  display: flex; align-items: center; gap: 10px;
+}
+.td-col { flex:1; text-align:center; }
+.td-lbl { font-size: 9px; color: var(--text3); font-weight: 800; letter-spacing: 1px; margin-bottom: 3px; }
+.td-val { font-size: 24px; font-weight: 900; }
+.td-val.ok { color: var(--green); }
+.td-val.bad { color: var(--red); }
+.td-sep { width:1px; height:40px; background:var(--border2); flex-shrink:0; }
+.td-verd { display:flex; flex-direction:column; align-items:center; gap:3px; flex-shrink:0; min-width:50px; }
+.td-verd-icon { font-size:22px; }
+.td-verd-txt { font-size:9px; font-weight:800; letter-spacing:1px; }
+.td-verd-txt.ok { color:var(--green); }
+.td-verd-txt.bad { color:var(--red); }
+.td-verd-txt.warn { color:var(--orange); }
+
+/* DOCK SECTION */
+.dock-sec {
+  background: var(--card);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.dock-sec-title { font-size: 11px; font-weight: 800; color: var(--text2); letter-spacing: 1.5px; text-transform: uppercase; }
+
+.dock-row { display: flex; gap: 8px; }
+
+.dock-input {
+  width: 80px;
+  background: var(--bg);
+  border: 2px solid var(--border2);
+  border-radius: var(--r);
+  padding: 12px 8px;
+  font-size: 26px; font-weight: 900;
+  color: var(--accent);
+  font-family: 'Exo 2', sans-serif;
+  outline: none; text-align: center;
+  transition: border-color 0.2s;
+  flex-shrink: 0;
+}
+.dock-input:focus { border-color: var(--accent); }
+
+.send-btn {
+  flex:1;
+  background: linear-gradient(135deg, var(--green), #00a855);
+  border: none; border-radius: var(--r);
+  padding: 12px;
+  font-size: 13px; font-weight: 900;
+  color: #000; cursor: pointer;
+  font-family: 'Exo 2', sans-serif;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  box-shadow: 0 3px 12px rgba(0,230,118,0.2);
+}
+.send-btn:active { transform: scale(0.97); box-shadow:none; }
+.send-btn:disabled { background: var(--card2); color: var(--text3); box-shadow:none; cursor:not-allowed; }
+
+.dock-note { font-size: 10px; color: var(--text3); text-align: center; }
+
+.sent-confirm {
+  display: none;
+  background: rgba(0,230,118,0.08);
+  border: 1px solid rgba(0,230,118,0.2);
+  border-radius: var(--r);
+  padding: 10px 14px;
+  font-size: 12px; color: var(--green); font-weight: 700;
+  text-align: center;
+}
+.sent-confirm.show { display: block; }
+
+.completato-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #7c3aed, #5b21b6);
+  border: none; border-radius: var(--r);
+  padding: 14px; font-size: 14px; font-weight: 900;
+  color: #fff; cursor: pointer;
+  font-family: 'Exo 2', sans-serif;
+  letter-spacing: 0.5px; transition: all 0.2s;
+  box-shadow: 0 3px 12px rgba(124,58,237,0.25);
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  margin-top: 8px;
+}
+.completato-btn:active { transform: scale(0.97); }
+
+/* ACTION BUTTONS */
+.action-btns { display: flex; flex-direction: column; gap: 8px; }
+.action-btn {
+  width: 100%;
+  border: none; border-radius: var(--r);
+  padding: 13px 16px;
+  font-size: 13px; font-weight: 800;
+  cursor: pointer; font-family: 'Exo 2', sans-serif;
+  letter-spacing: 0.5px; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.action-btn:active { transform: scale(0.97); }
+.action-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+.btn-wa { background: #25D366; color: #000; box-shadow: 0 3px 12px rgba(37,211,102,0.25); }
+.btn-sms { background: linear-gradient(135deg, #0ea5e9, #0369a1); color: #fff; box-shadow: 0 3px 12px rgba(14,165,233,0.25); }
+.btn-call { background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; box-shadow: 0 3px 12px rgba(168,85,247,0.2); }
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--card);
+  border: 1.5px solid var(--green);
+  border-radius: var(--r);
+  padding: 12px 20px;
+  font-size: 13px; font-weight: 700; color: var(--green);
+  z-index: 9999;
+  opacity: 0;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text3);
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+.empty-txt { font-size: 13px; font-weight: 600; line-height: 1.6; }
+
+/* LIVE DOT */
+.live-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: livePulse 1.5s ease infinite;
+  flex-shrink: 0;
+}
+@keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MOBILE DETAIL MODAL -->
+<div class="detail-modal" id="detail-modal">
+  <div style="flex:1" onclick="closeModal()"></div>
+  <div class="detail-modal-inner" id="detail-modal-inner">
+    <div class="modal-handle"></div>
+    <div class="modal-close" onclick="closeModal()">✕</div>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-logo">
+    <div class="tb-logo-icon">🚛</div>
+    <div class="tb-logo-name">TRUCK<span>WAY</span></div>
+  </div>
+  <div class="live-dot"></div>
+  <div class="tb-sep"></div>
+  <div class="tb-badge">🏭 DASHBOARD UFFICIO</div>
+  <div class="tb-time" id="tb-time">--:--</div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-val blue" id="s-total">0</div><div class="stat-lbl">Totale</div></div>
+  <div class="stat"><div class="stat-val green" id="s-ok">0</div><div class="stat-lbl">OK</div></div>
+  <div class="stat"><div class="stat-val red" id="s-fail">0</div><div class="stat-lbl">Bloccati</div></div>
+  <div class="stat"><div class="stat-val orange" id="s-wait">0</div><div class="stat-lbl">In Attesa</div></div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <button class="fbtn active" onclick="setFilter('all',this)">🚛 Tutti</button>
+  <button class="fbtn" onclick="setFilter('ok',this)">✅ Conformi</button>
+  <button class="fbtn" onclick="setFilter('fail',this)">❌ Bloccati</button>
+  <button class="fbtn" onclick="setFilter('waiting',this)">⏳ In Attesa</button>
+  <button class="fbtn" onclick="setFilter('missing',this)">⚠️ Temp. Mancante</button>
+  <button class="fbtn" onclick="setFilter('done',this)">✓ Completati</button>
+  <button class="fbtn" onclick="setFilter('archived',this)">🗂️ Archivio</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LIST -->
+  <div class="list-panel">
+    <div class="list-header">
+      <div class="list-title">Autisti in Arrivo</div>
+      <div class="list-count" id="list-count">0</div>
+    </div>
+    <div class="drivers" id="drivers-list"></div>
+  </div>
+
+  <!-- DETAIL (desktop) -->
+  <div class="detail-panel" id="detail-panel">
+    <div class="detail-empty">
+      <div class="detail-empty-icon">👈</div>
+      <div class="detail-empty-txt">Seleziona un autista<br>per vedere i dettagli</div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const FB = {
+  apiKey: "AIzaSyDHYF8dCZ8jrdrPE7rSHXaNoQlkEsL1iqo",
+  authDomain: "trucksystem-e9b4c.firebaseapp.com",
+  databaseURL: "https://trucksystem-e9b4c-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "trucksystem-e9b4c",
+  storageBucket: "trucksystem-e9b4c.firebasestorage.app",
+  messagingSenderId: "444683319177",
+  appId: "1:444683319177:web:49abf032e46e4ed083d358"
+};
+
+const app = initializeApp(FB);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// ── AUTH PROTECTION ──
+onAuthStateChanged(auth, user => {
+  if(!user){
+    window.location.href = 'https://truckway-login.netlify.app';
+  }
+});
+
+let drivers = [];
+let filter = 'all';
+let selectedId = null;
+
+// ── FIREBASE LISTEN ──
+onValue(ref(db,'drivers'), snap => {
+  const data = snap.val();
+  if(!data){ drivers=[]; renderAll(); return; }
+  const prev = drivers.map(d=>d.id);
+  drivers = Object.entries(data).map(([id,d])=>({
+    id,
+    name: d.name||'--',
+    company: d.company||'--',
+    truck: d.truck||'--',
+    trailer: d.trailer||'--',
+    phone: d.phone||'--',
+    dest: d.dest||'--',
+    order: d.order||null,
+    cargo: d.cargo||{emoji:'📦',name:'--',min:0,max:4},
+    t1: d.t1??null,
+    t2: d.t2??null,
+    ok: d.tempOk??false,
+    skipped: d.skipped||false,
+    time: d.time||'--',
+    date: d.date||'--',
+    status: d.status==='archived' ? 'archived' : (d.dock ? 'done' : (d.tempOk ? 'waiting' : (d.skipped ? 'missing' : 'blocked'))),
+    dock: d.dock||null,
+    type: d.type||'carico',
+  }));
+  drivers.reverse();
+  // notify new arrivals
+  drivers.forEach(d=>{
+    if(!prev.includes(d.id)) showToast('🚛 Nuovo arrivo: '+d.name);
+  });
+  renderAll();
+  if(selectedId) refreshDetail(selectedId);
+});
+
+// ── RENDER ──
+function renderAll(){
+  updateStats();
+  renderList();
+}
+
+function updateStats(){
+  const active = drivers.filter(d=>d.status!=='archived');
+  document.getElementById('s-total').textContent = active.length;
+  document.getElementById('s-ok').textContent = active.filter(d=>d.ok&&d.status!=='done').length;
+  document.getElementById('s-fail').textContent = active.filter(d=>!d.ok&&!d.skipped).length;
+  document.getElementById('s-wait').textContent = active.filter(d=>d.status==='waiting').length;
+}
+
+function renderList(){
+  const list = document.getElementById('drivers-list');
+  let items = drivers;
+  if(filter==='all') items=drivers.filter(d=>d.status!=='archived');
+  else if(filter==='ok') items=drivers.filter(d=>d.ok&&d.status!=='done'&&d.status!=='archived');
+  else if(filter==='fail') items=drivers.filter(d=>!d.ok&&!d.skipped&&d.status!=='archived');
+  else if(filter==='waiting') items=drivers.filter(d=>d.status==='waiting');
+  else if(filter==='missing') items=drivers.filter(d=>d.skipped&&d.status!=='archived');
+  else if(filter==='done') items=drivers.filter(d=>d.status==='done');
+  else if(filter==='archived') items=drivers.filter(d=>d.status==='archived');
+
+  document.getElementById('list-count').textContent = items.length + (items.length===1?' autista':' autisti');
+
+  if(items.length===0){
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-txt">Nessun autista in questa categoria</div></div>`;
+    return;
+  }
+
+  list.innerHTML='';
+  items.forEach(d=>{
+    const card = document.createElement('div');
+    const statusClass = d.status==='done'?'done': d.skipped?'missing': d.ok?'ok':'fail';
+    card.className=`dcard ${statusClass} ${selectedId===d.id?'selected':''}`;
+    card.onclick=()=>selectDriver(d.id);
+
+    const badgeTxt = d.status==='done'?`✓ RIBALTA ${d.dock}`: d.skipped?'⚠️ TEMP. ?': d.ok?'⏳ IN ATTESA':'🚫 BLOCCATO';
+    const badgeCls = d.status==='done'?'done': d.skipped?'missing': d.ok?'waiting':'fail';
+
+    const t1str = d.t1!==null?(d.t1>0?'+':'')+d.t1+'°':'--';
+    const t2str = d.t2!==null?(d.t2>0?'+':'')+d.t2+'°':'--';
+    const t1cls = d.ok?'':'bad';
+    const t2cls = d.ok?'':'bad';
+
+    card.innerHTML=`
+      <div class="dcard-top">
+        <div>
+          <div class="dcard-name">${d.name}</div>
+          <div class="dcard-company">${d.company}</div>
+        </div>
+        <div class="badge ${badgeCls}">${badgeTxt}</div>
+      </div>
+      <div class="dcard-info">
+        <div class="dchip">🚛 ${d.truck}</div>
+        <div class="dchip">📦 ${d.cargo.emoji} ${d.cargo.name}</div>
+        <div class="dchip">📱 ${d.phone}</div>
+        ${d.dest&&d.dest!=='--'?`<div class="dchip">📍 ${d.dest}</div>`:''}
+      </div>
+      <div class="dcard-temps">
+        <div class="dtbox"><span class="dtbox-l">T1</span><span class="dtbox-v ${t1cls}">${d.skipped?'⚠️':t1str}</span></div>
+        <div class="dtbox"><span class="dtbox-l">T2</span><span class="dtbox-v ${t2cls}">${d.skipped?'⚠️':t2str}</span></div>
+        <div class="dtbox"><span class="dtbox-l">RANGE</span><span class="dtbox-v" style="font-size:10px;">${d.cargo.min>=0?'+':''}${d.cargo.min}°→+${d.cargo.max}°</span></div>
+      </div>
+      <div class="dcard-time">🕐 ${d.date} — ${d.time}</div>
+      ${d.dock?`<div class="dock-sent">📱 Ribalta ${d.dock} inviata su WhatsApp</div>`:''}
+    `;
+    list.appendChild(card);
+  });
+}
+
+// ── SELECT DRIVER ──
+function selectDriver(id){
+  selectedId = id;
+  renderList();
+  const d = drivers.find(x=>x.id===id);
+  if(!d) return;
+  const html = buildDetailHTML(d);
+  // Desktop
+  const dp = document.getElementById('detail-panel');
+  dp.innerHTML = html;
+  // Mobile modal
+  if(window.innerWidth < 900){
+    document.getElementById('modal-content').innerHTML = html;
+    document.getElementById('detail-modal').classList.add('show');
+  }
+}
+
+window.closeModal = function(){
+  document.getElementById('detail-modal').classList.remove('show');
+};
+
+function refreshDetail(id){
+  const d = drivers.find(x=>x.id===id);
+  if(!d) return;
+  const html = buildDetailHTML(d);
+  const dp = document.getElementById('detail-panel');
+  if(dp.querySelector('.det-name')) dp.innerHTML = html;
+  const mc = document.getElementById('modal-content');
+  if(mc.innerHTML) mc.innerHTML = html;
+}
+
+function buildDetailHTML(d){
+  const t1str = d.t1!==null?(d.t1>0?'+':'')+d.t1+'°C':'--';
+  const t2str = d.t2!==null?(d.t2>0?'+':'')+d.t2+'°C':'--';
+  const t1cls = d.ok?'ok':'bad';
+  const t2cls = d.ok?'ok':'bad';
+  const rangeStr = (d.cargo.min>=0?'+':'')+d.cargo.min+'°C → +'+d.cargo.max+'°C';
+
+  const dockDisabled = (!d.ok && !d.skipped) || d.status==='done' ? 'disabled' : '';
+  const dockNote = d.status==='done'?'Ribalta già inviata': (!d.ok&&!d.skipped)?'Autista bloccato':'Invia via WhatsApp/SMS';
+  const sentShow = d.dock ? 'show' : '';
+
+  return `
+    <div class="det-section-title">Autista Selezionato</div>
+    <div>
+      <div class="det-name">${d.name}</div>
+      <div class="det-company">${d.company}</div>
+    </div>
+
+    <div class="det-grid">
+      <div class="det-box"><div class="det-box-lbl">Trattore</div><div class="det-box-val blue">${d.truck}</div></div>
+      <div class="det-box"><div class="det-box-lbl">Rimorchio</div><div class="det-box-val blue">${d.trailer}</div></div>
+      <div class="det-box"><div class="det-box-lbl">Merce</div><div class="det-box-val">${d.cargo.emoji} ${d.cargo.name}</div></div>
+      <div class="det-box"><div class="det-box-lbl">Orario</div><div class="det-box-val">${d.time}</div></div>
+      ${d.dest&&d.dest!=='--'?`<div class="det-box" style="grid-column:span 2"><div class="det-box-lbl">Destinazione</div><div class="det-box-val">${d.dest}</div></div>`:''}
+      ${d.order?`<div class="det-box" style="grid-column:span 2"><div class="det-box-lbl">Numero Ordine</div><div class="det-box-val blue">${d.order}</div></div>`:''}
+      <div class="det-box" style="grid-column:span 2"><div class="det-box-lbl">Telefono</div><div class="det-box-val">${d.phone}</div></div>
+    </div>
+
+    <div>
+      <div class="det-section-title" style="margin-bottom:8px">Temperatura</div>
+      ${d.skipped?`
+        <div style="background:rgba(255,145,0,0.08);border:1.5px solid rgba(255,145,0,0.25);border-radius:var(--r);padding:14px 16px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:4px;">⚠️</div>
+          <div style="font-size:13px;font-weight:800;color:var(--orange);">Strisciata non disponibile</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px;">Verificare temperatura manualmente</div>
+        </div>
+      `:`
+        <div class="temp-display">
+          <div class="td-col"><div class="td-lbl">T1</div><div class="td-val ${t1cls}">${t1str}</div></div>
+          <div class="td-sep"></div>
+          <div class="td-col"><div class="td-lbl">T2</div><div class="td-val ${t2cls}">${t2str}</div></div>
+          <div class="td-sep"></div>
+          <div class="td-verd">
+            <div class="td-verd-icon">${d.ok?'✅':'❌'}</div>
+            <div class="td-verd-txt ${d.ok?'ok':'bad'}">${d.ok?'OK':'NON OK'}</div>
+          </div>
+        </div>
+        <div class="det-box" style="margin-top:8px"><div class="det-box-lbl">Range Richiesto</div><div class="det-box-val orange">${rangeStr}</div></div>
+      `}
+    </div>
+
+    <div class="dock-sec">
+      <div class="dock-sec-title">📡 Invia Numero Ribalta</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <input class="dock-input" id="dock-inp-${d.id}" type="number" min="1" max="99" placeholder="7" value="${d.dock||''}">
+        <div style="flex:1;display:flex;flex-direction:column;gap:6px;justify-content:center;">
+          <div style="font-size:11px;color:var(--text2);font-weight:600;">Numero ribalta per ${d.name}</div>
+          <div style="font-size:10px;color:var(--text3);">${d.phone}</div>
+        </div>
+      </div>
+      <div class="action-btns">
+        <button class="action-btn btn-wa" ${dockDisabled} onclick="sendWhatsApp('${d.id}')">
+          <span style="font-size:18px;">💬</span> WhatsApp
+        </button>
+        <button class="action-btn btn-sms" ${dockDisabled} onclick="sendSMS('${d.id}')">
+          <span style="font-size:18px;">💬</span> SMS
+        </button>
+        <button class="action-btn btn-call" onclick="makeCall('${d.phone}')">
+          <span style="font-size:18px;">📞</span> Chiama
+        </button>
+      </div>
+      <div class="dock-note" style="margin-top:6px;">${dockNote}</div>
+      <div class="sent-confirm ${sentShow}" id="sent-${d.id}">
+        ✅ Ribalta ${d.dock||'--'} inviata a ${d.name}
+      </div>
+      ${d.dock ? `
+      <button class="completato-btn" onclick="markCompleted('${d.id}')">
+        ✅ Carico Completato — Archivia
+      </button>` : ''}
+    </div>
+  `;
+}
+
+// ── SEND FUNCTIONS ──
+async function saveDock(id){
+  const inp = document.getElementById('dock-inp-'+id);
+  if(!inp||!inp.value){
+    inp.focus(); inp.style.borderColor='var(--red)';
+    setTimeout(()=>inp.style.borderColor='',1500);
+    return null;
+  }
+  const dock = parseInt(inp.value);
+  const d = drivers.find(x=>x.id===id);
+  if(!d) return null;
+  try {
+    await update(ref(db,'drivers/'+id), { dock, status:'done' });
+    return { dock, d };
+  } catch(e) { return null; }
+}
+
+window.sendWhatsApp = async function(id){
+  const result = await saveDock(id);
+  if(!result) return;
+  const { dock, d } = result;
+  const phone = d.phone.replace(/\s|\+/g,'');
+  const msg = encodeURIComponent(
+    `🚛 *TruckWay* — Notifica Ribalta
+
+` +
+    `Buongiorno ${d.name},
+` +
+    `Il tuo carico è pronto.
+
+` +
+    `📍 *Dirigiti alla Ribalta N° ${dock}*
+
+` +
+    `🚛 ${d.truck} | 📦 ${d.cargo.emoji} ${d.cargo.name}
+` +
+    `✅ Temperatura verificata
+
+` +
+    `_TruckWay Driver System_`
+  );
+  window.open('https://wa.me/'+phone+'?text='+msg, '_blank');
+  showToast('💬 WhatsApp aperto per '+d.name);
+};
+
+window.sendSMS = async function(id){
+  const result = await saveDock(id);
+  if(!result) return;
+  const { dock, d } = result;
+  const phone = d.phone.replace(/\s/g,'');
+  const msg = encodeURIComponent(
+    `TruckWay: ${d.name}, dirigiti alla Ribalta N.${dock}. Carico ${d.cargo.name} pronto. ${d.truck}`
+  );
+  window.open('sms:'+phone+'?body='+msg, '_blank');
+  showToast('💬 SMS aperto per '+d.name);
+};
+
+window.makeCall = function(phone){
+  const clean = phone.replace(/\s/g,'');
+  window.open('tel:'+clean, '_blank');
+};
+
+// ── MARK COMPLETED ──
+window.markCompleted = async function(id){
+  const d = drivers.find(x=>x.id===id);
+  if(!d) return;
+  try {
+    await update(ref(db,'drivers/'+id), { 
+      status: 'archived',
+      completedAt: new Date().toISOString()
+    });
+    showToast('🗂️ '+d.name+' archiviato');
+    closeModal();
+    selectedId = null;
+    // reset detail panel desktop
+    const dp = document.getElementById('detail-panel');
+    dp.innerHTML = '<div class="detail-empty"><div class="detail-empty-icon">👈</div><div class="detail-empty-txt">Seleziona un autista<br>per vedere i dettagli</div></div>';
+  } catch(e){ showToast('❌ Errore'); }
+};
+
+// ── FILTER ──
+window.setFilter = function(f, btn){
+  filter = f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+};
+
+// ── TOAST ──
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3500);
+}
+
+// ── CLOCK ──
+function updateClock(){
+  const now = new Date();
+  document.getElementById('tb-time').textContent =
+    now.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+}
+updateClock();
+setInterval(updateClock, 10000);
+</script>
+</body>
+</html>

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="it" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TruckWay — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060a0f;
+  --card: #0f1923;
+  --card2: #162030;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.14);
+  --accent: #00d4ff;
+  --green: #00e676;
+  --red: #ff3d3d;
+  --text: #e8f4ff;
+  --text2: #6b8fa8;
+  --text3: #2a4a60;
+  --r: 14px;
+  --r2: 22px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: 'Exo 2', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events:none;
+}
+
+body::after {
+  content:'';
+  position:fixed;
+  top:-200px; left:50%; transform:translateX(-50%);
+  width:700px; height:500px;
+  background: radial-gradient(ellipse, rgba(0,212,255,0.07) 0%, transparent 65%);
+  pointer-events:none;
+}
+
+.login-wrap {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 1;
+}
+
+/* BRAND */
+.brand {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.brand-truck {
+  font-size: 64px;
+  filter: drop-shadow(0 0 20px rgba(0,212,255,0.4));
+  animation: float 3s ease-in-out infinite;
+  line-height: 1;
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.brand-name {
+  font-size: 32px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  margin-top: 10px;
+}
+
+.brand-name span { color: var(--accent); }
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--text2);
+  letter-spacing: 2px;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+/* CARD */
+.login-card {
+  background: var(--card);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text2);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+/* ROLE SELECTOR */
+.role-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.role-btn {
+  background: var(--card2);
+  border: 2px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.role-btn:active { transform: scale(0.97); }
+.role-btn.selected { border-color: var(--accent); background: rgba(0,212,255,0.06); }
+
+.role-icon { font-size: 26px; }
+.role-name { font-size: 12px; font-weight: 800; color: var(--text); }
+.role-sub { font-size: 10px; color: var(--text2); text-align: center; }
+
+/* FIELDS */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.flabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text2);
+  letter-spacing: 0.5px;
+}
+
+.finput {
+  background: var(--card2);
+  border: 1.5px solid var(--border2);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  font-size: 16px;
+  color: var(--text);
+  font-family: 'Exo 2', sans-serif;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+}
+
+.finput:focus { border-color: var(--accent); }
+.finput::placeholder { color: var(--text3); }
+
+/* LOGIN BTN */
+.login-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent), #007aaa);
+  border: none;
+  border-radius: var(--r);
+  padding: 17px;
+  font-size: 16px;
+  font-weight: 900;
+  color: #000;
+  cursor: pointer;
+  font-family: 'Exo 2', sans-serif;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(0,212,255,0.3);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.login-btn:active { transform: scale(0.98); box-shadow: none; }
+
+/* ERROR */
+.error-msg {
+  display: none;
+  background: rgba(255,61,61,0.1);
+  border: 1px solid rgba(255,61,61,0.25);
+  border-radius: var(--r);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--red);
+  text-align: center;
+}
+.error-msg.show { display: block; }
+
+/* LOADING */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(6,10,15,0.88);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  flex-direction: column;
+  gap: 16px;
+}
+.overlay.show { display: flex; }
+.spinner {
+  width: 56px; height: 56px;
+  border: 3px solid var(--border2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin-txt { font-size: 14px; color: var(--text2); font-weight: 600; }
+
+/* FOOTER */
+.login-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 11px;
+  color: var(--text3);
+  line-height: 1.7;
+}
+
+.login-footer a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+</style>
+</head>
+<body>
+
+<div class="overlay" id="overlay">
+  <div class="spinner"></div>
+  <div class="spin-txt" id="spin-txt">Accesso in corso...</div>
+</div>
+
+<div class="login-wrap">
+
+  <!-- BRAND -->
+  <div class="brand">
+    <div class="brand-truck">🚛</div>
+    <div class="brand-name">TRUCK<span>WAY</span></div>
+    <div class="brand-sub">Driver Check-In System</div>
+  </div>
+
+  <!-- CARD -->
+  <div class="login-card">
+    <div class="card-title">Accedi al tuo account</div>
+
+    <!-- ROLE -->
+    <div class="role-grid">
+      <div class="role-btn selected" id="role-ufficio" onclick="setRole('ufficio')">
+        <div class="role-icon">🏢</div>
+        <div class="role-name">Ufficio</div>
+        <div class="role-sub">Dashboard & controllo</div>
+      </div>
+      <div class="role-btn" id="role-kiosk" onclick="setRole('kiosk')">
+        <div class="role-icon">📱</div>
+        <div class="role-name">Kiosk</div>
+        <div class="role-sub">Schermo autisti</div>
+      </div>
+    </div>
+
+    <!-- FIELDS -->
+    <div class="field">
+      <div class="flabel">Email Aziendale</div>
+      <input class="finput" id="inp-email" type="email" placeholder="azienda@email.com" autocomplete="email">
+    </div>
+
+    <div class="field">
+      <div class="flabel">Password</div>
+      <input class="finput" id="inp-pass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+
+    <div class="error-msg" id="error-msg">❌ Email o password non corretti</div>
+
+    <button class="login-btn" onclick="doLogin()">
+      Accedi →
+    </button>
+
+  </div>
+
+  <div class="login-footer">
+    Hai bisogno di un account?<br>
+    <a href="mailto:truckway@email.com">Contatta TruckWay</a> per attivare la tua azienda
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FB = {
+  apiKey: "AIzaSyDHYF8dCZ8jrdrPE7rSHXaNoQlkEsL1iqo",
+  authDomain: "trucksystem-e9b4c.firebaseapp.com",
+  databaseURL: "https://trucksystem-e9b4c-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "trucksystem-e9b4c",
+  storageBucket: "trucksystem-e9b4c.firebasestorage.app",
+  messagingSenderId: "444683319177",
+  appId: "1:444683319177:web:49abf032e46e4ed083d358"
+};
+
+const app = initializeApp(FB);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let selectedRole = 'ufficio';
+
+// CHECK IF ALREADY LOGGED IN
+showOverlay('Verifica accesso...');
+onAuthStateChanged(auth, async user => {
+  if(user){
+    // get company info
+    const snap = await get(ref(db, 'companies/' + user.uid));
+    const company = snap.val();
+    if(company){
+      redirect(company, selectedRole);
+      return;
+    }
+  }
+  hideOverlay();
+});
+
+window.setRole = function(role){
+  selectedRole = role;
+  document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('role-'+role).classList.add('selected');
+};
+
+window.doLogin = async function(){
+  const email = document.getElementById('inp-email').value.trim();
+  const pass = document.getElementById('inp-pass').value;
+
+  if(!email || !pass){
+    showError('Inserisci email e password');
+    return;
+  }
+
+  showOverlay('Accesso in corso...');
+  hideError();
+
+  try {
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    const user = cred.user;
+
+    // get company data
+    const snap = await get(ref(db, 'companies/' + user.uid));
+    const company = snap.val();
+
+    if(!company){
+      showError('Account non configurato. Contatta TruckWay.');
+      hideOverlay();
+      return;
+    }
+
+    redirect(company, selectedRole);
+
+  } catch(e) {
+    hideOverlay();
+    showError('Email o password non corretti');
+  }
+};
+
+function redirect(company, role){
+  // Save company to sessionStorage
+  sessionStorage.setItem('tw_company', JSON.stringify(company));
+  sessionStorage.setItem('tw_role', role);
+
+  if(role === 'ufficio'){
+    window.location.href = 'https://truckway-dashbsrod.netlify.app';
+  } else {
+    window.location.href = 'https://truckway-pr.netlify.app';
+  }
+}
+
+function showError(msg){
+  const el = document.getElementById('error-msg');
+  el.textContent = '❌ ' + msg;
+  el.classList.add('show');
+}
+
+function hideError(){
+  document.getElementById('error-msg').classList.remove('show');
+}
+
+function showOverlay(txt){
+  document.getElementById('spin-txt').textContent = txt;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function hideOverlay(){
+  document.getElementById('overlay').classList.remove('show');
+}
+</script>
+</body>
+</html>
